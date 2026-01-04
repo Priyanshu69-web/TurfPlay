@@ -1,11 +1,9 @@
 
 import { useState } from "react";
-import axios from "axios";
-import NameInput from "../../components/Inputs/NameInput";
-import EmailInput from "../../components/Inputs/EmailInput";
-import PasswordInput from "../../components/Inputs/PasswordInput";
-import { Link, redirect, useNavigate } from "react-router-dom";
-import Navbar from "../../components/Layouts/Navbar";
+import NameInput from "../../components/ui/NameInput";
+import EmailInput from "../../components/ui/EmailInput";
+import PasswordInput from "../../components/ui/PasswordInput";
+import { Link, useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
 import { toast } from 'react-hot-toast';
@@ -31,7 +29,6 @@ const Register = () => {
 
     return (
         <>
-            <Navbar />
 
             <div className="flex items-center justify-center min-h-screen ">
                 <div className="card w-full max-w-md shadow-2xl bg-base-100 p-4">

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Navbar from "../components/Layouts/Navbar";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import toast from "react-hot-toast";
@@ -54,8 +53,7 @@ const Contact = () => {
 
   return (
     <>
-      <Navbar />
-      <div className="min-h-screen bg-base-100 p-4 md:p-8">
+      <div className="min-h-screen bg-black p-4 md:p-8">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-4xl font-bold mb-2 text-center">Contact Us</h1>
           <p className="text-center text-gray-600 mb-8">

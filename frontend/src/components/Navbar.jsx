@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { motion } from 'motion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import DropdownMenu from './DropDownMenu';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 function Navigation() {
     const { user, logout, loading } = useAuth();
     const navigate = useNavigate();
@@ -49,9 +49,15 @@ const Navbar = () => {
         <div className='sticky top-0 inset-x-0 z-20 w-full backdrop-blur-lg bg-transparent p-4 px-6 shadow-lg'>
             <div className='mx-auto c-space max-w-7xl'>
                 <div className='flex items-center justify-between py-2 sm:py-0'>
-                    <a href='/' className='text-xl font-bold transistion-colors text-neutral-400 hover:text-white'>
+                    {/* <a href='/' className='text-xl font-bold transistion-colors text-neutral-400 hover:text-white'>
                         TurfPlay
-                    </a>
+                    </a> */}
+                    <Link to="/">
+                        <div className="flex items-center space-x-2">
+
+                            <h1 className="text-2xl font-bold transistion-colors text-neutral-400 hover:text-white font-pacifico">TurfPlay</h1>
+                        </div>
+                    </Link>
                     <button onClick={() => setIsOpen(!isOpen)} className='flex cursor-pointer text-neutral-400 hover:text-white focus:outline-none sm:hidden'>
                         <img src={isOpen ? "/assets/close.svg" : "/assets/menu.svg"} className='w-6 h-6' alt='toggle' />
                     </button>

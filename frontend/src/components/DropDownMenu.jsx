@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { USER_MENU_DATA, ADMIN_MENU_DATA } from '../../utils/data';
+import { useAuth } from '../context/AuthContext';
+import { USER_MENU_DATA, ADMIN_MENU_DATA } from '../utils/data';
 
 const DropdownMenu = ({ label, items }) => {
     const [open, setOpen] = useState(false);

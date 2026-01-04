@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../components/Layouts/Navbar";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import { useAuth } from "../context/AuthContext";
@@ -105,7 +104,6 @@ const Booking = () => {
 
   return (
     <>
-      <Navbar />
       <div className="min-h-screen bg-base-100 p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-8 text-center">Book Your Turf</h1>
@@ -127,11 +125,10 @@ const Booking = () => {
                         <button
                           key={turf._id}
                           onClick={() => setSelectedTurf(turf)}
-                          className={`btn btn-block text-left ${
-                            selectedTurf?._id === turf._id
-                              ? "btn-primary"
-                              : "btn-ghost"
-                          }`}
+                          className={`btn btn-block text-left ${selectedTurf?._id === turf._id
+                            ? "btn-primary"
+                            : "btn-ghost"
+                            }`}
                         >
                           <div className="text-left w-full">
                             <p className="font-bold">{turf.name}</p>
@@ -195,11 +192,10 @@ const Booking = () => {
                         <button
                           key={slot._id}
                           onClick={() => setSelectedSlot(slot)}
-                          className={`btn btn-sm ${
-                            selectedSlot?._id === slot._id
-                              ? "btn-primary"
-                              : "btn-outline"
-                          }`}
+                          className={`btn btn-sm ${selectedSlot?._id === slot._id
+                            ? "btn-primary"
+                            : "btn-outline"
+                            }`}
                         >
                           {slot.startTime} - {slot.endTime}
                         </button>

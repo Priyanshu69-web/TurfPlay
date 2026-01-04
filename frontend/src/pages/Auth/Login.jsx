@@ -1,8 +1,7 @@
 import { useState } from "react";
-import EmailInput from "../../components/Inputs/EmailInput";
-import PasswordInput from "../../components/Inputs/PasswordInput";
+import EmailInput from "../../components/ui/EmailInput";
+import PasswordInput from "../../components/ui/PasswordInput";
 import { Link, useNavigate } from 'react-router-dom';
-import Navbar from "../../components/Layouts/Navbar";
 import toast from "react-hot-toast";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_PATHS } from "../../utils/apiPath";
@@ -48,7 +47,6 @@ const Login = () => {
 
     return (
         <>
-            <Navbar />
             <div className="flex items-center justify-center min-h-screen ">
                 <div className="card w-full max-w-md shadow-2xl bg-base-100">
                     <form onSubmit={handleSubmit} className="card-body">

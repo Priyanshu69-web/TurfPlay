@@ -5,7 +5,7 @@ import Register from "./pages/Auth/Register";
 import Home from "./pages/Home";
 import Booking from "./pages/Booking";
 import Contact from "./pages/Contact";
-
+import MainLayout from "./components/Layout";
 import PrivateRoute from "./routes/PrivateRoute";
 import Userdashboard from "./pages/User/Userdashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
@@ -18,11 +18,13 @@ function App() {
       <AuthProvider>
         <Routes>
           {/* Public route */}
-          <Route path="/" element={<Home />} />
-          <Route path="/booking" element={<Booking />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/booking" element={<Booking />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+          </Route>
 
 
           {/* Admin route */}
