@@ -5,6 +5,7 @@ export const API_PATHS = {
     REGISTER: "/api/v1/auth/signup",
     LOGIN: "/api/v1/auth/login",
     GET_PROFILE: "/api/v1/auth/profile",
+    LOGOUT: "/api/v1/auth/logout",
   },
   TURF: {
     GET_ALL: "/api/v1/turfs/get-turfs",

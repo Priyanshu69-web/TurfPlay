@@ -3,9 +3,18 @@ import EmailInput from "../../components/ui/EmailInput";
 import PasswordInput from "../../components/ui/PasswordInput";
 import { Link, useNavigate } from 'react-router-dom';
 import toast from "react-hot-toast";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATHS } from "../../utils/apiPath";
-import { useAuth } from "../../context/AuthContext";
+import { useLoginMutation } from "../../redux/api/authApi";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/slices/authSlice";
+import { motion } from 'framer-motion';
+
+const GlassCard = ({ children, className = '' }) => (
+    <div
+        className={`backdrop-blur-lg bg-black/30 border border-white/10 rounded-2xl p-8 ${className}`}
+    >
+        {children}
+    </div>
+);
 
 const Login = () => {
     const [formData, setFormData] = useState({
@@ -14,7 +23,8 @@ const Login = () => {
     });
 
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const dispatch = useDispatch();
+    const [login, { isLoading }] = useLoginMutation();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -24,62 +34,105 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, formData, { withCredentials: true }, {
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const token = response.data.token;
-            const user = await login(token);
+            const response = await login(formData).unwrap();
+            const token = response.token;
+            const user = response.user;
+
+            dispatch(setUser({ user, token }));
+            localStorage.setItem('token', token);
             toast.success("Login successful");
 
             const role = user?.role;
-
             if (role === 1) {
                 navigate("/admin/dashboard");
             } else {
                 navigate("/user/dashboard");
             }
         } catch (error) {
-            toast.error("Login failed: " + (error.response?.data?.message || error.message));
+            toast.error("Login failed: " + (error?.data?.message || error.message));
         }
     };
 
     return (
-        <>
-            <div className="flex items-center justify-center min-h-screen ">
-                <div className="card w-full max-w-md shadow-2xl bg-base-100">
-                    <form onSubmit={handleSubmit} className="card-body">
-                        <h2 className="text-center text-2xl font-bold">Login to TurfPlay</h2>
-                        <div className="form-control">
-                            <label className="label mb-2">
-                                <span className="label-text">Email</span>
-                            </label>
-                            <EmailInput name="email" value={formData.email}
-                                onChange={handleChange} required />
-
-                        </div>
-                        <div className="form-control">
-                            <label className="label mb-2">
-                                <span className="label-text">Password</span>
-                            </label>
-                            <PasswordInput name="password" value={formData.password}
-                                onChange={handleChange}
-                                required />
-                        </div>
-                        <div className="form-control mt-6">
-                            <button className="btn btn-outline ">Login</button>
-                        </div>
-                        <p className="text-[15px] mt-3">
-                            Don't have an account?{" "}
-                            <Link className=" font-medium text-primary underline " to="/register">
-                                Signup
-                            </Link>
-                        </p>
-                    </form>
-                </div>
+        <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-x-hidden flex items-center justify-center py-12 px-4">
+            {/* Animated Background Elements */}
+            <div className="absolute inset-0 -z-10">
+                <div className="absolute top-20 left-20 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute bottom-20 right-20 w-80 h-80 bg-green-400/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-green-500/5 to-blue-500/5 rounded-full blur-3xl"></div>
             </div>
-        </>
+
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="w-full max-w-md"
+            >
+                <GlassCard>
+                    <div className="text-center mb-8">
+                        <h1 className="text-4xl font-bold mb-2">Welcome Back</h1>
+                        <p className="text-gray-300">Login to your TurfPlay account</p>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="w-full">
+                            <label className="block text-sm font-semibold mb-2 text-gray-200">
+                                Email Address
+                            </label>
+                            <EmailInput
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all"
+                            />
+                        </div>
+
+                        <div className="w-full">
+                            <label className="block text-sm font-semibold mb-2 text-gray-200">
+                                Password
+                            </label>
+                            <PasswordInput
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all"
+                            />
+                        </div>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-3 rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:shadow-lg hover:shadow-green-500/25 disabled:opacity-50 flex items-center justify-center gap-2"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <span className="loading loading-spinner loading-sm"></span>
+                                    Logging in...
+                                </>
+                            ) : (
+                                "Login"
+                            )}
+                        </motion.button>
+                    </form>
+
+                    <div className="divider my-6 text-gray-400">or</div>
+
+                    <p className="text-center text-gray-300">
+                        Don't have an account?{" "}
+                        <Link
+                            to="/register"
+                            className="text-green-400 font-semibold hover:text-green-300 transition-colors"
+                        >
+                            Sign up here
+                        </Link>
+                    </p>
+                </GlassCard>
+            </motion.div>
+        </div>
     );
 };
 

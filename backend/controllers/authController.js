@@ -48,7 +48,8 @@ export const loginController = async (req, res) => {
   }
 
   try {
-    const user = await UserModel.findOne({ email });
+    const user = await UserModel.findOne({ email }).select("+password");
+    console.log(user);
     if (!user) {
       return res.status(400).json({ message: "Email not found" });
     }
@@ -59,7 +60,7 @@ export const loginController = async (req, res) => {
     }
 
     const token = JWT.sign({ id: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "1d",
+      expiresIn: "7d",
     });
 
     return res.status(200).json({
@@ -74,7 +75,7 @@ export const loginController = async (req, res) => {
       },
     });
   } catch (error) {
-    // console.error(error);
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Error in login",

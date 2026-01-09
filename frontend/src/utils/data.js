@@ -1,41 +1,41 @@
 import {
-    LuLayoutDashboard,
-    LuUsers,
-    LuClipboardCheck,
-    LuSquarePlus,
-    LuLogOut,
-} from "react-icons/lu";
+    LayoutDashboard,
+    Users,
+    ClipboardCheck,
+    SquarePlus,
+    LogOut,
+} from "lucide-react";
 
 export const ADMIN_MENU_DATA = [
     {
         id: "01",
         label: "Profile",
-        icon: LuLayoutDashboard,
+        icon: LayoutDashboard,
         path: "/admin/dashboard",
     },
 
     {
         id: "02",
         label: "Manage-Slots ",
-        icon: LuClipboardCheck,
+        icon: ClipboardCheck,
         path: "/admin/tasks",
     },
     {
         id: "03",
         label: "Create Slots",
-        icon: LuSquarePlus,
+        icon: SquarePlus,
         path: "/admin/create-slot",
     },
     {
         id: "04",
         label: "Bookings",
-        icon: LuUsers,
+        icon: Users,
         path: "/admin/users",
     },
     {
         id: "05",
         label: "Logout",
-        icon: LuLogOut,
+        icon: LogOut,
         path: "logout",
     },
 ];
@@ -44,14 +44,14 @@ export const USER_MENU_DATA = [
     {
         id: "01",
         label: "Profile",
-        icon: LuUsers,
+        icon: Users,
         path: "/profile",
     },
 
     {
         id: "02",
         label: "My Slots",
-        icon: LuLayoutDashboard,
+        icon: LayoutDashboard,
         path: "/user/slots",
     },
 
