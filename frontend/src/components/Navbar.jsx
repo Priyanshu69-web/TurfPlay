@@ -3,12 +3,16 @@ import { motion } from 'motion/react';
 import { useNavigate, Link } from 'react-router-dom';
 import DropdownMenu from './DropDownMenu';
 import { useAuth } from '../context/AuthContext';
+import { useLazyGetUserQuery } from '../redux/api/authApi';
+
 function Navigation() {
     const { user, logout, loading } = useAuth();
+    const [triggerGetUser] = useLazyGetUserQuery();
     const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
+        const res = triggerGetUser().unwrap();
         navigate("/login")
     }
     if (loading) return null;

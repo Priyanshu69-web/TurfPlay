@@ -56,7 +56,7 @@ const Register = () => {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
+                        <div className="w-full">
                             <label className="block text-sm font-semibold mb-2 text-gray-200">
                                 Full Name
                             </label>
@@ -65,11 +65,11 @@ const Register = () => {
                                 value={form.name}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all"
+                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all box-border"
                             />
                         </div>
 
-                        <div>
+                        <div className="w-full">
                             <label className="block text-sm font-semibold mb-2 text-gray-200">
                                 Email Address
                             </label>
@@ -78,11 +78,11 @@ const Register = () => {
                                 value={form.email}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all"
+                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all box-border"
                             />
                         </div>
 
-                        <div>
+                        <div className="w-full">
                             <label className="block text-sm font-semibold mb-2 text-gray-200">
                                 Password
                             </label>
@@ -91,7 +91,7 @@ const Register = () => {
                                 value={form.password}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all"
+                                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-green-500 transition-all box-border"
                             />
                         </div>
 
