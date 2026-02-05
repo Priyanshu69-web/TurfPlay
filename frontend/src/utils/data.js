@@ -45,14 +45,20 @@ export const USER_MENU_DATA = [
         id: "01",
         label: "Profile",
         icon: Users,
-        path: "/profile",
+        path: "/user/profile",
     },
 
     {
         id: "02",
-        label: "My Slots",
+        label: "My Bookings",
         icon: LayoutDashboard,
-        path: "/user/slots",
+        path: "/user/bookings",
     },
 
+    {
+        id: "03",
+        label: "Logout",
+        icon: LogOut,
+        path: "logout",
+    },
 ];

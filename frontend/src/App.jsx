@@ -1,10 +1,10 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { logout, setToken, setUser, setLoading } from "./redux/slices/authSlice";
 import { useLazyGetUserQuery } from "./redux/api/authApi";
 import { AuthProvider } from "./context/AuthContext";
+import { useTheme } from "./context/ThemeContext";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
 import Home from "./pages/Home";
@@ -12,16 +12,16 @@ import Booking from "./pages/Booking";
 import Contact from "./pages/Contact";
 import MainLayout from "./components/Layout";
 import PrivateRoute from "./routes/PrivateRoute";
-import Userdashboard from "./pages/User/Userdashboard";
+import UserDashboard from "./pages/User/Userdashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import NotFound from "./pages/NotFound";
 
-import MySlots from "./pages/User/MySlots";
 import { toast } from "sonner";
 
-
-function App() {
+function AppContent() {
   const dispatch = useDispatch();
   const [triggerGetUser] = useLazyGetUserQuery();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -50,10 +50,10 @@ function App() {
   }, [dispatch, triggerGetUser]);
 
   return (
-    <Router>
-      <AuthProvider>
+    <div className={isDark ? 'dark' : ''}>
+      <Router>
         <Routes>
-          {/* Public route */}
+          {/* Public routes */}
           <Route element={<MainLayout />}>
             <Route path="/" element={<Home />} />
             <Route path="/booking" element={<Booking />} />
@@ -62,23 +62,29 @@ function App() {
             <Route path="/register" element={<Register />} />
           </Route>
 
-
-          {/* Admin route */}
+          {/* Admin routes */}
           <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
           </Route>
 
-
-          {/* user route */}
-          <Route element={< PrivateRoute allowedRoles={["user"]} />}>
-            <Route path="/user/dashboard" element={<Userdashboard />} />
-            <Route path="user/slots" element={<MySlots />} />
+          {/* User routes */}
+          <Route element={<PrivateRoute allowedRoles={["user"]} />}>
+            <Route path="/user/dashboard/*" element={<UserDashboard />} />
           </Route>
 
-          <Route path="*" element={<div>404 Page Not Found</div>} />
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </AuthProvider>
-    </Router>
+      </Router>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

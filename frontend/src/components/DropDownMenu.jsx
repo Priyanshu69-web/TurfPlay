@@ -1,20 +1,33 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { USER_MENU_DATA, ADMIN_MENU_DATA } from '../utils/data';
 
-const DropdownMenu = ({ label, items }) => {
+const DropdownMenu = ({ label }) => {
     const [open, setOpen] = useState(false);
     const menuRef = useRef();
-    const { user } = useAuth();
-    const [menuData, SetMenuData] = useState([]);
+    const { user, logout } = useAuth();
+    const [menuData, setMenuData] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (user?.role === 1) {
-            SetMenuData(ADMIN_MENU_DATA);
-        } else {
-            SetMenuData(USER_MENU_DATA);
-        }
-    }, [user, user?.role]);
+        const isAdmin = user?.role === 1;
+        const baseMenuData = isAdmin ? ADMIN_MENU_DATA : USER_MENU_DATA;
+
+        setMenuData(baseMenuData.map(item => ({
+            ...item,
+            onClick: item.path === 'logout'
+                ? () => {
+                    logout();
+                    navigate('/login');
+                    setOpen(false);
+                }
+                : () => {
+                    navigate(item.path);
+                    setOpen(false);
+                }
+        })));
+    }, [user, user?.role, navigate, logout]);
 
     useEffect(() => {
         const handler = (e) => {
@@ -42,12 +55,11 @@ const DropdownMenu = ({ label, items }) => {
                             <li
                                 key={idx}
                                 onClick={() => {
-                                    setOpen(false);
                                     item.onClick?.();
                                 }}
                                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
                             >
-                                {item.icon && <span className="mr-2">{item.icon}</span>}
+                                {item.icon && <span className="mr-2">{React.createElement(item.icon)}</span>}
                                 {item.label}
                             </li>
                         ))}

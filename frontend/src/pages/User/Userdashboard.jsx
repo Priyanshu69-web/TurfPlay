@@ -1,209 +1,68 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar";
-import axiosInstance from "../../utils/axiosInstance";
-import { API_PATHS } from "../../utils/apiPath";
-import { useAuth } from "../../context/AuthContext";
-import toast from "react-hot-toast";
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { LayoutDashboard, Calendar, User, LogOut } from 'lucide-react';
+import Sidebar from '../../components/Dashboard/Sidebar';
+import UserHome from './UserDashboard/UserHome';
+import UserBookings from './UserDashboard/UserBookings';
+import UserProfile from './UserDashboard/UserProfile';
+import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 
 const UserDashboard = () => {
-  const [upcomingBookings, setUpcomingBookings] = useState([]);
-  const [bookingHistory, setBookingHistory] = useState([]);
-  const [activeTab, setActiveTab] = useState("upcoming");
-  const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const { isDark } = useTheme();
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
+  const menuItems = [
+    { label: 'Dashboard', path: '/user/dashboard', icon: LayoutDashboard },
+    { label: 'My Bookings', path: '/user/dashboard/bookings', icon: Calendar },
+    { label: 'My Profile', path: '/user/dashboard/profile', icon: User },
+  ];
 
-  const fetchBookings = async () => {
-    try {
-      setLoading(true);
-
-      const [upcomingRes, historyRes] = await Promise.all([
-        axiosInstance.get(API_PATHS.BOOKINGS.GET_UPCOMING),
-        axiosInstance.get(API_PATHS.BOOKINGS.GET_HISTORY),
-      ]);
-
-      setUpcomingBookings(upcomingRes.data.data || []);
-      setBookingHistory(historyRes.data.data || []);
-    } catch (error) {
-      toast.error("Failed to fetch bookings");
-      console.error(error);
-    } finally {
-      setLoading(false);
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+      navigate('/login');
     }
   };
-
-  const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm("Are you sure you want to cancel this booking?")) {
-      return;
-    }
-
-    try {
-      await axiosInstance.post(API_PATHS.BOOKINGS.CANCEL, { bookingId });
-      toast.success("Booking cancelled successfully");
-      fetchBookings();
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to cancel booking");
-    }
-  };
-
-  const BookingCard = ({ booking, isUpcoming }) => (
-    <div className="card bg-base-200 shadow-xl">
-      <div className="card-body">
-        <h2 className="card-title">{booking.turfId.name}</h2>
-        <div className="divider my-2"></div>
-        <div className="space-y-2 text-sm">
-          <p>
-            <span className="font-bold">Location:</span> {booking.turfId.location}
-          </p>
-          <p>
-            <span className="font-bold">Date:</span>{" "}
-            {new Date(booking.date).toLocaleDateString()}
-          </p>
-          <p>
-            <span className="font-bold">Time:</span> {booking.startTime} -{" "}
-            {booking.endTime}
-          </p>
-          <p>
-            <span className="font-bold">Amount:</span> ₹{booking.amount}
-          </p>
-          <p>
-            <span className="font-bold">Status:</span>
-            <span className="badge badge-success ml-2">{booking.status}</span>
-          </p>
-        </div>
-
-        {isUpcoming && (
-          <div className="card-actions justify-end mt-4">
-            <button
-              onClick={() => handleCancelBooking(booking._id)}
-              className="btn btn-sm btn-outline btn-error"
-            >
-              Cancel Booking
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
 
   return (
-    <>
-      <Navbar />
-      <div className="min-h-screen bg-base-100 p-4 md:p-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Profile Section */}
-          <div className="card bg-base-200 shadow-xl mb-8">
-            <div className="card-body">
-              <h2 className="card-title text-3xl">Welcome, {user?.name}!</h2>
-              <p className="text-sm opacity-75">{user?.email}</p>
-            </div>
+    <div className={`flex h-screen ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+      <Sidebar menuItems={menuItems} />
+
+      <div className="flex-1 flex flex-col lg:ml-0">
+        {/* Top Bar */}
+        <div className={`${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} border-b p-4 flex justify-between items-center`}>
+          <h1 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>User Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              isDark
+                ? 'text-red-400 hover:bg-red-900/20'
+                : 'text-red-600 hover:bg-red-50'
+            }`}
+          >
+            <LogOut size={20} />
+            Logout
+          </button>
+        </div>
+
+        {/* Main Content */}
+        <div className={`flex-1 overflow-auto p-4 lg:p-8 ${isDark ? 'bg-gray-950' : 'bg-gray-50'}`}>
+          <div className="max-w-7xl mx-auto">
+            <Routes>
+              <Route path="/" element={<UserHome />} />
+              <Route path="/bookings" element={<UserBookings />} />
+              <Route path="/profile" element={<UserProfile />} />
+            </Routes>
           </div>
-
-          {/* Tabs */}
-          <div className="tabs tabs-lifted mb-8">
-            <button
-              onClick={() => setActiveTab("upcoming")}
-              className={`tab ${activeTab === "upcoming" ? "tab-active" : ""}`}
-            >
-              Upcoming Bookings ({upcomingBookings.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`tab ${activeTab === "history" ? "tab-active" : ""}`}
-            >
-              Booking History ({bookingHistory.length})
-            </button>
-          </div>
-
-          {/* Content */}
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <span className="loading loading-spinner loading-lg"></span>
-            </div>
-          ) : (
-            <div>
-              {activeTab === "upcoming" && (
-                <div>
-                  {upcomingBookings.length === 0 ? (
-                    <div className="alert alert-info">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        className="stroke-current shrink-0 w-6 h-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        ></path>
-                      </svg>
-                      <div>
-                        <p>No upcoming bookings</p>
-                        <p className="text-sm">
-                          <a href="/booking" className="link">
-                            Book a slot now!
-                          </a>
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {upcomingBookings.map((booking) => (
-                        <BookingCard
-                          key={booking._id}
-                          booking={booking}
-                          isUpcoming={true}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === "history" && (
-                <div>
-                  {bookingHistory.length === 0 ? (
-                    <div className="alert alert-info">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        className="stroke-current shrink-0 w-6 h-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        ></path>
-                      </svg>
-                      <span>No booking history yet</span>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {bookingHistory.map((booking) => (
-                        <BookingCard
-                          key={booking._id}
-                          booking={booking}
-                          isUpcoming={false}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 export default UserDashboard;
+
 
