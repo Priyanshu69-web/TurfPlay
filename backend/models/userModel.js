@@ -24,6 +24,20 @@ const UserModelSchema = new mongoose.Schema(
       type: Number,
       default: 0, // 0: user, 1: admin
     },
+    phone: {
+      type: String,
+      match: /^[0-9]{10}$/,
+      default: "",
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    blockedReason: String,
+    address: String,
+    profileImage: String,
+    resetToken: String,
+    resetTokenExpiry: Date,
   },
   { timestamps: true }
 );

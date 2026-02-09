@@ -1,105 +1,207 @@
-import React, { useState, useEffect } from 'react';
-import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
-import DataTable from '../../../components/Dashboard/DataTable';
-import Modal from '../../../components/Dashboard/Modal';
-import Button from '../../../components/Dashboard/Button';
-import axiosInstance from '../../../utils/axiosInstance';
-import { API_PATHS } from '../../../utils/apiPath';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import DashboardHeader from "../../../components/Dashboard/DashboardHeader";
+import StatusBadge from "../../../components/Dashboard/StatusBadge";
+import { useGetBookingsQuery, useCancelBookingMutation } from "../../../redux/api/adminApi";
+import toast from "react-hot-toast";
 
 const ManageBookings = () => {
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 10,
+    status: "",
+    date: "",
+  });
 
-  useEffect(() => {
-    fetchBookings();
-  }, [filter]);
+  const { data: bookingsData, isLoading, refetch } = useGetBookingsQuery(filters);
+  const [cancelBooking, { isLoading: isCancelling }] = useCancelBookingMutation();
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [cancelReason, setCancelReason] = useState("");
 
-  const fetchBookings = async () => {
+  const handleCancelBooking = async () => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.get('/api/v1/admin/bookings');
-      let data = response.data.data || [];
-
-      if (filter !== 'all') {
-        data = data.filter((b) => b.status === filter);
-      }
-
-      setBookings(data);
+      await cancelBooking({ id: selectedBooking._id, reason: cancelReason }).unwrap();
+      toast.success("Booking cancelled successfully");
+      setSelectedBooking(null);
+      setCancelReason("");
+      refetch();
     } catch (error) {
-      console.error('Failed to fetch bookings:', error);
-      toast.error('Failed to load bookings');
-    } finally {
-      setLoading(false);
+      toast.error(error?.data?.message || "Failed to cancel booking");
     }
   };
 
-  const handleUpdateStatus = async (bookingId, status) => {
-    try {
-      await axiosInstance.put(`/api/v1/admin/bookings/${bookingId}`, { status });
-      toast.success(`Booking marked as ${status}`);
-      fetchBookings();
-    } catch (error) {
-      toast.error('Failed to update booking');
-    }
+  const handleFilterChange = (key, value) => {
+    setFilters({ ...filters, [key]: value, page: 1 });
   };
 
-  const columns = [
-    { key: 'userId', label: 'User', render: (val) => val?.name || 'N/A' },
-    { key: 'turfId', label: 'Turf', render: (val) => val?.name || 'N/A' },
-    { key: 'date', label: 'Date', render: (val) => new Date(val).toLocaleDateString() },
-    { key: 'startTime', label: 'Time', render: (val, row) => `${row.startTime} - ${row.endTime}` },
-    { key: 'amount', label: 'Amount', render: (val) => `₹${val}` },
-    {
-      key: 'status',
-      label: 'Status',
-      render: (val) => (
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-          val === 'approved'
-            ? 'bg-green-100 text-green-800'
-            : val === 'pending'
-            ? 'bg-yellow-100 text-yellow-800'
-            : 'bg-red-100 text-red-800'
-        }`}>
-          {val}
-        </span>
-      ),
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
+
+  const bookings = bookingsData?.data || [];
+  const total = bookingsData?.total || 0;
+  const pages = bookingsData?.pages || 1;
 
   return (
     <div className="space-y-6">
       <DashboardHeader title="Manage Bookings" subtitle="View and manage all bookings" />
 
-      <div className="flex gap-4 mb-4">
-        {['all', 'pending', 'approved', 'cancelled'].map((status) => (
-          <button
-            key={status}
-            onClick={() => setFilter(status)}
-            className={`px-4 py-2 rounded-lg capitalize ${
-              filter === status
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-            }`}
-          >
-            {status}
-          </button>
-        ))}
+      {/* Filters */}
+      <div className="card bg-base-200 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title text-lg mb-4">Filters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="date"
+              value={filters.date}
+              onChange={(e) => handleFilterChange("date", e.target.value)}
+              className="input input-bordered"
+              placeholder="Date"
+            />
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange("status", e.target.value)}
+              className="select select-bordered"
+            >
+              <option value="">All Status</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="pending">Pending</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+            <input
+              type="number"
+              value={filters.limit}
+              onChange={(e) => handleFilterChange("limit", parseInt(e.target.value))}
+              className="input input-bordered"
+              placeholder="Items per page"
+            />
+            <button
+              onClick={() => setFilters({ page: 1, limit: 10, status: "", date: "" })}
+              className="btn btn-ghost"
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <DataTable
-          columns={columns}
-          data={bookings}
-          loading={loading}
-          onEdit={(booking) => {
-            const newStatus =
-              booking.status === 'approved' ? 'cancelled' : 'approved';
-            handleUpdateStatus(booking._id, newStatus);
-          }}
-        />
+      {/* Bookings Table */}
+      <div className="card bg-base-200 shadow-xl overflow-x-auto">
+        <table className="table w-full">
+          <thead className="bg-base-300">
+            <tr>
+              <th>Customer</th>
+              <th>Turf</th>
+              <th>Date & Time</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="text-center py-4">
+                  No bookings found
+                </td>
+              </tr>
+            ) : (
+              bookings.map((booking) => (
+                <tr key={booking._id} className="hover:bg-base-300">
+                  <td>
+                    <div>
+                      <p className="font-bold">{booking.userId?.name || "N/A"}</p>
+                      <p className="text-sm opacity-75">{booking.userId?.email || "N/A"}</p>
+                    </div>
+                  </td>
+                  <td>
+                    <p className="font-semibold">{booking.turfId?.name || "N/A"}</p>
+                    <p className="text-sm opacity-75">{booking.turfId?.location || "N/A"}</p>
+                  </td>
+                  <td>
+                    <p className="font-semibold">{new Date(booking.date).toLocaleDateString()}</p>
+                    <p className="text-sm">{booking.startTime} - {booking.endTime}</p>
+                  </td>
+                  <td className="font-bold">₹{booking.amount}</td>
+                  <td>
+                    <StatusBadge status={booking.status} size="sm" />
+                  </td>
+                  <td>
+                    {booking.status !== "cancelled" && (
+                      <button
+                        onClick={() => setSelectedBooking(booking)}
+                        className="btn btn-sm btn-error"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center gap-2">
+        <button
+          onClick={() => handleFilterChange("page", Math.max(1, filters.page - 1))}
+          disabled={filters.page === 1}
+          className="btn btn-sm"
+        >
+          Previous
+        </button>
+        <span className="flex items-center px-4">
+          Page {filters.page} of {pages}
+        </span>
+        <button
+          onClick={() => handleFilterChange("page", Math.min(pages, filters.page + 1))}
+          disabled={filters.page === pages}
+          className="btn btn-sm"
+        >
+          Next
+        </button>
+      </div>
+
+      {/* Cancel Booking Modal */}
+      {selectedBooking && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="card bg-base-100 shadow-2xl max-w-md w-full mx-4">
+            <div className="card-body">
+              <h2 className="card-title">Cancel Booking</h2>
+              <p className="text-sm opacity-75 mb-4">
+                Booking ID: {selectedBooking._id.slice(0, 8)}...
+              </p>
+              <textarea
+                placeholder="Cancellation reason (optional)"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                className="textarea textarea-bordered w-full"
+                rows="3"
+              />
+              <div className="card-actions justify-end mt-6">
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  className="btn btn-ghost"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCancelBooking}
+                  disabled={isCancelling}
+                  className="btn btn-error"
+                >
+                  {isCancelling ? "Cancelling..." : "Confirm Cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

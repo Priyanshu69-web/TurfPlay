@@ -6,7 +6,7 @@ import { bookSlot, cancelSlotBooking } from "./slotService.js";
 /**
  * Create a new booking
  */
-export const createBooking = async (userId, slotId, turfId) => {
+export const createBooking = async (userId, slotId, turfId, bookingData = {}) => {
   try {
     // Check if slot is already booked
     const slot = await SlotModel.findById(slotId);
@@ -32,7 +32,7 @@ export const createBooking = async (userId, slotId, turfId) => {
     // Book the slot
     await bookSlot(slotId);
 
-    // Create booking
+    // Create booking with optional fields
     const booking = new BookingModel({
       userId,
       turfId,
@@ -42,6 +42,12 @@ export const createBooking = async (userId, slotId, turfId) => {
       endTime: slot.endTime,
       amount: turf.pricePerSlot,
       status: "confirmed",
+      playerName: bookingData.playerName,
+      playerPhone: bookingData.playerPhone,
+      playerCount: bookingData.playerCount,
+      notes: bookingData.notes,
+      paymentMethod: bookingData.paymentMethod || "online",
+      paymentStatus: "completed",
     });
 
     await booking.save();

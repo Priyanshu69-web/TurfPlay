@@ -1,86 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
-import DataTable from '../../../components/Dashboard/DataTable';
-import Modal from '../../../components/Dashboard/Modal';
-import Button from '../../../components/Dashboard/Button';
-import axiosInstance from '../../../utils/axiosInstance';
-import { toast } from 'sonner';
+import React, { useState } from "react";
+import DashboardHeader from "../../../components/Dashboard/DashboardHeader";
+import StatusBadge from "../../../components/Dashboard/StatusBadge";
+import { useGetMessagesQuery, useUpdateMessageMutation } from "../../../redux/api/adminApi";
+import toast from "react-hot-toast";
 
 const ManageMessages = () => {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 10,
+    status: "",
+  });
+
+  const { data: messagesData, isLoading, refetch } = useGetMessagesQuery(filters);
+  const [updateMessage] = useUpdateMessageMutation();
   const [selectedMessage, setSelectedMessage] = useState(null);
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
-  const fetchMessages = async () => {
+  const handleUpdateStatus = async (messageId, newStatus) => {
     try {
-      setLoading(true);
-      const response = await axiosInstance.get('/api/v1/admin/messages');
-      setMessages(response.data.data || []);
+      await updateMessage({ id: messageId, status: newStatus }).unwrap();
+      toast.success("Message status updated");
+      refetch();
     } catch (error) {
-      console.error('Failed to fetch messages:', error);
-      toast.error('Failed to load messages');
-    } finally {
-      setLoading(false);
+      toast.error(error?.data?.message || "Failed to update message");
     }
   };
 
-  const handleViewMessage = (message) => {
-    setSelectedMessage(message);
-    setShowModal(true);
-
-    if (!message.isRead) {
-      markAsRead(message._id);
-    }
+  const handleFilterChange = (key, value) => {
+    setFilters({ ...filters, [key]: value, page: 1 });
   };
 
-  const markAsRead = async (messageId) => {
-    try {
-      await axiosInstance.put(`/api/v1/admin/messages/${messageId}`, {
-        isRead: true,
-      });
-      fetchMessages();
-    } catch (error) {
-      console.error('Failed to mark as read:', error);
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <span className="loading loading-spinner loading-lg"></span>
+      </div>
+    );
+  }
 
-  const handleDeleteMessage = async (messageId) => {
-    if (!window.confirm('Are you sure you want to delete this message?')) return;
-    try {
-      await axiosInstance.delete(`/api/v1/admin/messages/${messageId}`);
-      toast.success('Message deleted successfully');
-      fetchMessages();
-    } catch (error) {
-      toast.error('Failed to delete message');
-    }
-  };
-
-  const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'subject', label: 'Subject' },
-    {
-      key: 'message',
-      label: 'Message',
-      render: (val) => val?.substring(0, 50) + '...',
-    },
-    {
-      key: 'isRead',
-      label: 'Status',
-      render: (val) => (
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-          val ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'
-        }`}>
-          {val ? 'Read' : 'Unread'}
-        </span>
-      ),
-    },
-  ];
+  const messages = messagesData?.data || [];
+  const total = messagesData?.total || 0;
+  const pages = messagesData?.pages || 1;
 
   return (
     <div className="space-y-6">
@@ -89,54 +48,160 @@ const ManageMessages = () => {
         subtitle="View and manage contact form submissions"
       />
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <DataTable
-          columns={columns}
-          data={messages}
-          loading={loading}
-          onEdit={handleViewMessage}
-          onDelete={handleDeleteMessage}
-        />
+      {/* Filters */}
+      <div className="card bg-base-200 shadow-xl">
+        <div className="card-body">
+          <h2 className="card-title text-lg mb-4">Filters</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <select
+              value={filters.status}
+              onChange={(e) => handleFilterChange("status", e.target.value)}
+              className="select select-bordered"
+            >
+              <option value="">All Status</option>
+              <option value="pending">Pending</option>
+              <option value="responded">Responded</option>
+            </select>
+            <input
+              type="number"
+              value={filters.limit}
+              onChange={(e) => handleFilterChange("limit", parseInt(e.target.value))}
+              className="input input-bordered"
+              placeholder="Items per page"
+            />
+            <button
+              onClick={() => setFilters({ page: 1, limit: 10, status: "" })}
+              className="btn btn-ghost"
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Table */}
+      <div className="card bg-base-200 shadow-xl overflow-x-auto">
+        <table className="table w-full">
+          <thead className="bg-base-300">
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Message</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {messages.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="text-center py-4">
+                  No messages found
+                </td>
+              </tr>
+            ) : (
+              messages.map((message) => (
+                <tr key={message._id} className="hover:bg-base-300">
+                  <td className="font-semibold">{message.name}</td>
+                  <td className="text-sm">{message.email}</td>
+                  <td className="text-sm max-w-xs truncate">{message.message}</td>
+                  <td>
+                    <StatusBadge status={message.status || "pending"} size="sm" />
+                  </td>
+                  <td className="text-sm">
+                    {new Date(message.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="space-x-2">
+                    <button
+                      onClick={() => setSelectedMessage(message)}
+                      className="btn btn-sm btn-info"
+                    >
+                      View
+                    </button>
+                    {message.status !== "responded" && (
+                      <button
+                        onClick={() => handleUpdateStatus(message._id, "responded")}
+                        className="btn btn-sm btn-success"
+                      >
+                        Mark Responded
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center gap-2">
+        <button
+          onClick={() => handleFilterChange("page", Math.max(1, filters.page - 1))}
+          disabled={filters.page === 1}
+          className="btn btn-sm"
+        >
+          Previous
+        </button>
+        <span className="flex items-center px-4">
+          Page {filters.page} of {pages}
+        </span>
+        <button
+          onClick={() => handleFilterChange("page", Math.min(pages, filters.page + 1))}
+          disabled={filters.page === pages}
+          className="btn btn-sm"
+        >
+          Next
+        </button>
       </div>
 
       {/* Message Detail Modal */}
-      <Modal
-        isOpen={showModal}
-        title="Message Details"
-        onClose={() => setShowModal(false)}
-        size="lg"
-      >
-        {selectedMessage && (
-          <div className="space-y-4">
-            <div>
-              <label className="font-semibold text-gray-700">Name:</label>
-              <p className="text-gray-600">{selectedMessage.name}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Email:</label>
-              <p className="text-gray-600">{selectedMessage.email}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Phone:</label>
-              <p className="text-gray-600">{selectedMessage.phone || 'N/A'}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Subject:</label>
-              <p className="text-gray-600">{selectedMessage.subject}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Message:</label>
-              <p className="text-gray-600 whitespace-pre-wrap">{selectedMessage.message}</p>
-            </div>
-            <div>
-              <label className="font-semibold text-gray-700">Sent:</label>
-              <p className="text-gray-600">
-                {new Date(selectedMessage.createdAt).toLocaleString()}
-              </p>
+      {selectedMessage && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="card bg-base-100 shadow-2xl max-w-2xl w-full mx-4">
+            <div className="card-body">
+              <h2 className="card-title">Message Details</h2>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="font-semibold text-sm opacity-75">Name</p>
+                    <p className="font-bold">{selectedMessage.name}</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm opacity-75">Email</p>
+                    <p className="font-bold">{selectedMessage.email}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="font-semibold text-sm opacity-75">Message</p>
+                  <p className="whitespace-pre-wrap mt-2 p-3 bg-base-200 rounded">
+                    {selectedMessage.message}
+                  </p>
+                </div>
+                <div className="text-xs opacity-75">
+                  Sent: {new Date(selectedMessage.createdAt).toLocaleString()}
+                </div>
+              </div>
+              <div className="card-actions justify-end mt-6">
+                <button onClick={() => setSelectedMessage(null)} className="btn btn-ghost">
+                  Close
+                </button>
+                {selectedMessage.status !== "responded" && (
+                  <button
+                    onClick={() => {
+                      handleUpdateStatus(selectedMessage._id, "responded");
+                      setSelectedMessage(null);
+                    }}
+                    className="btn btn-success"
+                  >
+                    Mark Responded
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        )}
-      </Modal>
+        </div>
+      )}
     </div>
   );
 };

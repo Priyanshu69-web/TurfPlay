@@ -56,9 +56,8 @@ export const getTurfById = async (req, res) => {
  */
 export const createTurf = async (req, res) => {
   try {
-    const { name, location, description, pricePerSlot, images, openingTime, closingTime, slotDuration } = req.body;
+    const { name, location, description, pricePerSlot, images, openingTime, closingTime, slotDuration, facilities, latitude, longitude, capacity, phone, website, amenities } = req.body;
 
-    // Validation
     if (!name || !location || pricePerSlot === undefined) {
       return res.status(400).json({
         success: false,
@@ -75,6 +74,13 @@ export const createTurf = async (req, res) => {
       openingTime: openingTime || "06:00",
       closingTime: closingTime || "22:00",
       slotDuration: slotDuration || 60,
+      facilities: facilities || [],
+      latitude,
+      longitude,
+      capacity,
+      phone,
+      website,
+      amenities,
     });
 
     await turf.save();
@@ -99,7 +105,7 @@ export const createTurf = async (req, res) => {
 export const updateTurf = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, location, description, pricePerSlot, images, openingTime, closingTime, slotDuration } = req.body;
+    const { name, location, description, pricePerSlot, images, openingTime, closingTime, slotDuration, facilities, latitude, longitude, capacity, phone, website, amenities } = req.body;
 
     const turf = await TurfModel.findByIdAndUpdate(
       id,
@@ -112,6 +118,13 @@ export const updateTurf = async (req, res) => {
         openingTime,
         closingTime,
         slotDuration,
+        facilities,
+        latitude,
+        longitude,
+        capacity,
+        phone,
+        website,
+        amenities,
       },
       { new: true, runValidators: true }
     );
@@ -134,5 +147,56 @@ export const updateTurf = async (req, res) => {
       success: false,
       message: "Failed to update turf",
     });
+  }
+};
+
+// Update turf pricing
+export const updateTurfPricing = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { pricePerSlot, slotDuration } = req.body;
+
+    if (pricePerSlot < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Price must be non-negative",
+      });
+    }
+
+    const turf = await TurfModel.findByIdAndUpdate(
+      id,
+      { pricePerSlot, slotDuration },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: turf,
+      message: "Pricing updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating pricing" });
+  }
+};
+
+// Update turf hours
+export const updateTurfHours = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { openingTime, closingTime } = req.body;
+
+    const turf = await TurfModel.findByIdAndUpdate(
+      id,
+      { openingTime, closingTime },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: turf,
+      message: "Hours updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error updating hours" });
   }
 };

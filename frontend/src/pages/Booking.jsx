@@ -13,6 +13,13 @@ const Booking = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loading, setLoading] = useState(false);
   const [slotLoading, setSlotLoading] = useState(false);
+  const [bookingDetails, setBookingDetails] = useState({
+    playerName: "",
+    playerPhone: "",
+    playerCount: 1,
+    notes: "",
+    paymentMethod: "online",
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -84,10 +91,25 @@ const Booking = () => {
       return;
     }
 
+    if (!bookingDetails.playerName.trim()) {
+      toast.error("Please enter player name");
+      return;
+    }
+
+    if (!bookingDetails.playerPhone.trim() || bookingDetails.playerPhone.length !== 10) {
+      toast.error("Please enter valid 10-digit phone number");
+      return;
+    }
+
     try {
       const response = await axiosInstance.post(API_PATHS.BOOKINGS.CREATE, {
         slotId: selectedSlot._id,
         turfId: selectedTurf._id,
+        playerName: bookingDetails.playerName,
+        playerPhone: bookingDetails.playerPhone,
+        playerCount: bookingDetails.playerCount,
+        notes: bookingDetails.notes,
+        paymentMethod: bookingDetails.paymentMethod,
       });
 
       if (response.data.success) {
@@ -205,29 +227,80 @@ const Booking = () => {
 
                 {/* Booking Details */}
                 {selectedSlot && selectedTurf && (
-                  <div className="alert alert-info mt-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      className="stroke-current shrink-0 w-6 h-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      ></path>
-                    </svg>
-                    <div>
-                      <p className="font-bold">Amount: ₹{selectedTurf.pricePerSlot}</p>
+                  <div className="space-y-4 mt-4">
+                    <div className="alert alert-info">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        className="stroke-current shrink-0 w-6 h-6"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        ></path>
+                      </svg>
+                      <div>
+                        <p className="font-bold">Amount: ₹{selectedTurf.pricePerSlot}</p>
+                      </div>
+                    </div>
+
+                    {/* Player Details */}
+                    <div className="space-y-3 bg-base-300 p-4 rounded-lg">
+                      <h3 className="font-bold text-sm">Player Details</h3>
+                      
+                      <input
+                        type="text"
+                        placeholder="Player Name"
+                        value={bookingDetails.playerName}
+                        onChange={(e) => setBookingDetails({...bookingDetails, playerName: e.target.value})}
+                        className="input input-bordered input-sm w-full"
+                      />
+                      
+                      <input
+                        type="tel"
+                        placeholder="Phone Number (10 digits)"
+                        maxLength="10"
+                        value={bookingDetails.playerPhone}
+                        onChange={(e) => setBookingDetails({...bookingDetails, playerPhone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
+                        className="input input-bordered input-sm w-full"
+                      />
+                      
+                      <input
+                        type="number"
+                        placeholder="Number of Players"
+                        min="1"
+                        value={bookingDetails.playerCount}
+                        onChange={(e) => setBookingDetails({...bookingDetails, playerCount: parseInt(e.target.value)})}
+                        className="input input-bordered input-sm w-full"
+                      />
+
+                      <select
+                        value={bookingDetails.paymentMethod}
+                        onChange={(e) => setBookingDetails({...bookingDetails, paymentMethod: e.target.value})}
+                        className="select select-bordered select-sm w-full"
+                      >
+                        <option value="online">Online Payment</option>
+                        <option value="cash">Cash on Site</option>
+                        <option value="upi">UPI</option>
+                      </select>
+
+                      <textarea
+                        placeholder="Special requests (optional)"
+                        value={bookingDetails.notes}
+                        onChange={(e) => setBookingDetails({...bookingDetails, notes: e.target.value})}
+                        className="textarea textarea-bordered w-full text-sm"
+                        rows="2"
+                      />
                     </div>
                   </div>
                 )}
 
                 <button
                   onClick={handleBooking}
-                  disabled={!selectedSlot || !user}
+                  disabled={!selectedSlot || !user || !bookingDetails.playerName || !bookingDetails.playerPhone}
                   className="btn btn-primary btn-block mt-4"
                 >
                   Confirm Booking

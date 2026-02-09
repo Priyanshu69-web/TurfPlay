@@ -28,15 +28,29 @@ const TurfModelSchema = new Schema(
     ],
     openingTime: {
       type: String,
-      default: "06:00", // HH:MM format
+      default: "06:00",
     },
     closingTime: {
       type: String,
-      default: "22:00", // HH:MM format
+      default: "22:00",
     },
     slotDuration: {
       type: Number,
-      default: 60, // in minutes
+      default: 60,
+    },
+    facilities: [String],
+    latitude: Number,
+    longitude: Number,
+    capacity: Number,
+    phone: String,
+    website: String,
+    amenities: {
+      hasLights: Boolean,
+      hasParking: Boolean,
+      hasWashroom: Boolean,
+      hasCanteen: Boolean,
+      hasChangeroom: Boolean,
+      hasDrinkingWater: Boolean,
     },
   },
   { timestamps: true }

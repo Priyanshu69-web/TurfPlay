@@ -3,20 +3,25 @@ import {
   getUserProfile,
   loginController,
   signupController,
+  updateProfile,
+  changePassword,
+  forgotPassword,
+  verifyResetToken,
+  resetPassword,
 } from "../controllers/authController.js";
 import { isAdmin, requireSignIn } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-//Signup
 router.post("/signup", signupController);
-
-//Login
 router.post("/login", loginController);
-// get user profile
-router.get("/profile", requireSignIn, getUserProfile)
+router.get("/profile", requireSignIn, getUserProfile);
+router.put("/profile", requireSignIn, updateProfile);
+router.post("/change-password", requireSignIn, changePassword);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-token", verifyResetToken);
+router.post("/reset-password", resetPassword);
 
-//Admin Route
 router.get("/admin", requireSignIn, isAdmin, (req, res) => {
   res.status(200).send({ ok: true });
 });

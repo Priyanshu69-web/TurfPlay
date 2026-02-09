@@ -31,13 +31,32 @@ const BookingModelSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["confirmed", "cancelled"],
+      enum: ["pending", "confirmed", "cancelled"],
       default: "confirmed",
     },
     amount: {
       type: Number,
       required: true,
     },
+    playerName: String,
+    playerPhone: String,
+    playerCount: {
+      type: Number,
+      min: 1,
+    },
+    notes: String,
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "online", "upi"],
+      default: "online",
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed"],
+      default: "completed",
+    },
+    cancellationReason: String,
+    cancellationDate: Date,
   },
   { timestamps: true }
 );

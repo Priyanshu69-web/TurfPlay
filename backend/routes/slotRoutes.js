@@ -3,17 +3,22 @@ import {
   getSlots,
   createSlot,
   generateNextDaysSlots,
+  blockSlot,
+  blockDateSlots,
+  getAdminSlots,
 } from "../controllers/slotController.js";
-import { requireSignIn } from "../middleware/authMiddleware.js";
+import { requireSignIn, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public route to get available slots
 router.get("/get-slots", getSlots);
 
-// Protected routes
 router.post("/create-slots", requireSignIn, createSlot);
 router.post("/generate-next-days", requireSignIn, generateNextDaysSlots);
 
-export default router;
+// Admin slot management
+router.get("/admin/get-slots", requireSignIn, isAdmin, getAdminSlots);
+router.put("/admin/:id/block", requireSignIn, isAdmin, blockSlot);
+router.put("/admin/block-date", requireSignIn, isAdmin, blockDateSlots);
 
+export default router;

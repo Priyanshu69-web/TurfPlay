@@ -2,11 +2,11 @@ import * as bookingService from "../services/bookingService.js";
 
 /**
  * Create a new booking
- * Body: slotId, turfId
+ * Body: slotId, turfId, playerName, playerPhone, playerCount, notes, paymentMethod
  */
 export const createBookings = async (req, res) => {
   try {
-    const { slotId, turfId } = req.body;
+    const { slotId, turfId, playerName, playerPhone, playerCount, notes, paymentMethod } = req.body;
     const userId = req.user.id;
 
     if (!slotId || !turfId) {
@@ -16,7 +16,15 @@ export const createBookings = async (req, res) => {
       });
     }
 
-    const booking = await bookingService.createBooking(userId, slotId, turfId);
+    const bookingData = {
+      playerName,
+      playerPhone,
+      playerCount,
+      notes,
+      paymentMethod: paymentMethod || "online",
+    };
+
+    const booking = await bookingService.createBooking(userId, slotId, turfId, bookingData);
 
     res.status(201).json({
       success: true,

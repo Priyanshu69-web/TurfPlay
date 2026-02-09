@@ -14,17 +14,24 @@ const slotSchema = new mongoose.Schema(
     startTime: {
       type: String,
       required: [true, "Start time is required"],
-      // Format: HH:MM
     },
     endTime: {
       type: String,
       required: [true, "End time is required"],
-      // Format: HH:MM
     },
     status: {
       type: String,
-      enum: ["available", "booked"],
+      enum: ["available", "booked", "blocked"],
       default: "available",
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+    blockedReason: String,
+    blockedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true }

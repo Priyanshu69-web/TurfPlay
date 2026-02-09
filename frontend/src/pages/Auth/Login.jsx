@@ -117,19 +117,26 @@ const Login = () => {
                                 "Login"
                             )}
                         </motion.button>
+                        <div className="flex justify-between items-center text-sm mb-6">
+                            <label className="flex items-center gap-2 text-gray-300">
+                                <input type="checkbox" className="checkbox checkbox-sm checkbox-success" />
+                                Remember me
+                            </label>
+                            <Link to="/forgot-password" className="text-green-400 hover:text-green-300 font-semibold transition-colors">
+                                Forgot Password?
+                            </Link>
+                        </div>
+
+                        <p className="text-center text-gray-300">
+                            Don't have an account?{" "}
+                            <Link
+                                to="/register"
+                                className="text-green-400 font-semibold hover:text-green-300 transition-colors"
+                            >
+                                Sign up here
+                            </Link>
+                        </p>
                     </form>
-
-                    <div className="divider my-6 text-gray-400">or</div>
-
-                    <p className="text-center text-gray-300">
-                        Don't have an account?{" "}
-                        <Link
-                            to="/register"
-                            className="text-green-400 font-semibold hover:text-green-300 transition-colors"
-                        >
-                            Sign up here
-                        </Link>
-                    </p>
                 </GlassCard>
             </motion.div>
         </div>

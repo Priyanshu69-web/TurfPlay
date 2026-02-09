@@ -44,7 +44,53 @@ export const authApi = createApi({
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
     }),
+    updateProfile: builder.mutation({
+      query: (userData) => ({
+        url: `${API_PATHS.AUTH.PROFILE}`,
+        method: 'PUT',
+        body: userData,
+      }),
+    }),
+    changePassword: builder.mutation({
+      query: (passwordData) => ({
+        url: '/auth/change-password',
+        method: 'POST',
+        body: passwordData,
+      }),
+    }),
+    forgotPassword: builder.mutation({
+      query: (email) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body: email,
+      }),
+    }),
+    verifyResetToken: builder.mutation({
+      query: (data) => ({
+        url: '/auth/verify-reset-token',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    resetPassword: builder.mutation({
+      query: (data) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
   }),
 });
 
-export const { useLoginMutation, useRegisterMutation, useLogoutMutation, useGetUserQuery, useLazyGetUserQuery } = authApi;
+export const { 
+  useLoginMutation, 
+  useRegisterMutation, 
+  useLogoutMutation, 
+  useGetUserQuery, 
+  useLazyGetUserQuery,
+  useUpdateProfileMutation,
+  useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useVerifyResetTokenMutation,
+  useResetPasswordMutation,
+} = authApi;

@@ -8,6 +8,7 @@ import connectDB from "./config/db.js";
 import slotRoutes from "./routes/slotRoutes.js";
 import turfRoutes from "./routes/turfRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/v1/bookings", bookingRoutes);
 app.use("/api/v1/slots", slotRoutes);
 app.use("/api/v1/turfs", turfRoutes);
 app.use("/api/v1/contact", contactRoutes);
+app.use("/api/v1/admin", adminRoutes);
 
 // Health check
 app.get("/api/v1/health", (req, res) => {
