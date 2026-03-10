@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart3, Users, Grid3x3, BookOpen } from 'lucide-react';
 import StatCard from '../../../components/Dashboard/StatCard';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
@@ -9,6 +10,7 @@ import { toast } from 'sonner';
 
 const AdminHome = () => {
   const { isDark } = useTheme();
+  const navigate = useNavigate();
   const { data, isLoading, error } = useGetStatsQuery();
   const stats = data?.data || {
     totalTurfs: 0,
@@ -62,13 +64,22 @@ const AdminHome = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card title="Quick Actions">
           <div className="space-y-3">
-            <button className={`w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-left font-medium transition-colors`}>
+            <button
+              onClick={() => navigate('/admin/dashboard/turfs')}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-left font-medium transition-colors"
+            >
               + Create New Turf
             </button>
-            <button className={`w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-left font-medium transition-colors`}>
+            <button
+              onClick={() => navigate('/admin/dashboard/slots')}
+              className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-left font-medium transition-colors"
+            >
               + Generate Slots
             </button>
-            <button className={`w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left font-medium transition-colors`}>
+            <button
+              onClick={() => navigate('/admin/dashboard/messages')}
+              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left font-medium transition-colors"
+            >
               View All Messages
             </button>
           </div>

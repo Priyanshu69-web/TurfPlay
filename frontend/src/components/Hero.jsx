@@ -38,14 +38,20 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/25 cursor-pointer whitespace-nowrap">
+                        <Link
+                            to="/booking"
+                            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/25 cursor-pointer whitespace-nowrap text-center"
+                        >
                             <i className="ri-calendar-line mr-2"></i>
                             Book Now
-                        </button>
-                        <button className="border-2 border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all duration-300 backdrop-blur-sm cursor-pointer whitespace-nowrap">
-                            <i className="ri-play-circle-line mr-2"></i>
-                            Watch Demo
-                        </button>
+                        </Link>
+                        <Link
+                            to="/#popular-turfs"
+                            className="border-2 border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all duration-300 backdrop-blur-sm cursor-pointer whitespace-nowrap text-center"
+                        >
+                            <i className="ri-grid-line mr-2"></i>
+                            View Turfs
+                        </Link>
                     </div>
 
                     {/* Quick Stats */}

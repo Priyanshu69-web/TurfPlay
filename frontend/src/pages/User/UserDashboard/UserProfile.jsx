@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, Lock } from 'lucide-react';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
 import Card from '../../../components/Dashboard/Card';
 import Input from '../../../components/Dashboard/Input';
 import Button from '../../../components/Dashboard/Button';
 import { useAuth } from '../../../context/AuthContext';
+import { useTheme } from '../../../context/ThemeContext';
 import axiosInstance from '../../../utils/axiosInstance';
 import { toast } from 'sonner';
 
 const UserProfile = () => {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState({
@@ -82,13 +83,13 @@ const UserProfile = () => {
       <DashboardHeader title="My Profile" subtitle="Manage your account information" />
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-gray-200">
+      <div className={`flex gap-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <button
           onClick={() => setActiveTab('profile')}
           className={`px-4 py-3 font-medium border-b-2 transition ${
             activeTab === 'profile'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-green-500 text-green-500'
+              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
           Profile Information
@@ -97,8 +98,8 @@ const UserProfile = () => {
           onClick={() => setActiveTab('password')}
           className={`px-4 py-3 font-medium border-b-2 transition ${
             activeTab === 'password'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-green-500 text-green-500'
+              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
           Change Password

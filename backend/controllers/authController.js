@@ -63,7 +63,7 @@ export const loginController = async (req, res) => {
       return res.status(400).json({ message: "Invalid password" });
     }
 
-    const token = JWT.sign({ id: user._id }, process.env.SECRET_KEY, {
+    const token = JWT.sign({ _id: user._id }, process.env.SECRET_KEY, {
       expiresIn: "7d",
     });
 
@@ -90,7 +90,7 @@ export const loginController = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.user.id).select('-password');
+    const user = await UserModel.findById(req.user._id).select('-password');
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }

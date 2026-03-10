@@ -95,7 +95,7 @@ export const adminApi = createApi({
     }),
     blockSlot: builder.mutation({
       query: ({ id, isBlocked, reason }) => ({
-        url: `/api/v1/slots/admin/${id}/block`,
+        url: `/api/v1/admin/slots/${id}/block`,
         method: 'PUT',
         body: { isBlocked, reason },
       }),
@@ -103,7 +103,7 @@ export const adminApi = createApi({
     }),
     blockDateSlots: builder.mutation({
       query: ({ turfId, date, isBlocked, reason }) => ({
-        url: `/api/v1/slots/admin/block-date`,
+        url: `/api/v1/admin/slots/block-date`,
         method: 'PUT',
         body: { turfId, date, isBlocked, reason },
       }),

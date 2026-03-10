@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { useSubmitContactMutation } from "../redux/api/contactApi";
+import axios from "axios";
 import toast from "react-hot-toast";
 import { motion } from 'framer-motion';
+
+const API_URL = "http://127.0.0.1:8080/api/v1";
 
 const GlassCard = ({ children, className = '' }) => (
   <div
@@ -18,7 +20,7 @@ const Contact = () => {
     message: "",
   });
 
-  const [submitContact, { isLoading }] = useSubmitContactMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -45,13 +47,17 @@ const Contact = () => {
     }
 
     try {
-      const response = await submitContact(formData).unwrap();
-      if (response.success) {
-        toast.success(response.message);
+      setIsLoading(true);
+      const response = await axios.post(`${API_URL}/contact/submit`, formData);
+      if (response.data.success) {
+        toast.success(response.data.message);
         setFormData({ name: "", email: "", message: "" });
       }
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to submit contact");
+      console.error("API Error:", error);
+      toast.error(error.response?.data?.message || "Failed to submit contact");
+    } finally {
+      setIsLoading(false);
     }
   };
 

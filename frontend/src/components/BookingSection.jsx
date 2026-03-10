@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function BookingSection() {
+    const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState('');
     const [selectedTime, setSelectedTime] = useState('');
     const [selectedSport, setSelectedSport] = useState('football');
@@ -35,7 +37,7 @@ export default function BookingSection() {
                     <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
                         <h3 className="text-2xl font-bold text-white mb-8">Reserve Your Slot</h3>
 
-                        <form className="space-y-6">
+                        <form onSubmit={(e) => { e.preventDefault(); navigate('/booking'); }} className="space-y-6">
                             {/* Sport Selection */}
                             <div>
                                 <label className="block text-white font-medium mb-4">Select Sport</label>
@@ -107,7 +109,7 @@ export default function BookingSection() {
                                 className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 cursor-pointer whitespace-nowrap"
                             >
                                 <i className="ri-calendar-check-line mr-2"></i>
-                                Book Now - $45/hour
+                                Book Now
                             </button>
                         </form>
                     </div>

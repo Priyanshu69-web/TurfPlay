@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
 import DataTable from '../../../components/Dashboard/DataTable';
 import Modal from '../../../components/Dashboard/Modal';
+import { useTheme } from '../../../context/ThemeContext';
 import axiosInstance from '../../../utils/axiosInstance';
 import { API_PATHS } from '../../../utils/apiPath';
 import { toast } from 'sonner';
 
 const UserBookings = () => {
+  const { isDark } = useTheme();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('upcoming');
@@ -59,11 +61,11 @@ const UserBookings = () => {
       label: 'Status',
       render: (val) => (
         <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-          val === 'approved'
-            ? 'bg-green-100 text-green-800'
+          val === 'confirmed'
+            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
             : val === 'pending'
-            ? 'bg-yellow-100 text-yellow-800'
-            : 'bg-red-100 text-red-800'
+            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
         }`}>
           {val}
         </span>
@@ -76,13 +78,13 @@ const UserBookings = () => {
       <DashboardHeader title="My Bookings" subtitle="View your booking history and upcoming bookings" />
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b border-gray-200">
+      <div className={`flex gap-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <button
           onClick={() => setTab('upcoming')}
           className={`px-4 py-3 font-medium border-b-2 transition ${
             tab === 'upcoming'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-green-500 text-green-500'
+              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
           Upcoming ({bookings.filter(b => new Date(b.date) > new Date()).length})
@@ -91,21 +93,23 @@ const UserBookings = () => {
           onClick={() => setTab('history')}
           className={`px-4 py-3 font-medium border-b-2 transition ${
             tab === 'history'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-green-500 text-green-500'
+              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
           History ({bookings.filter(b => new Date(b.date) <= new Date()).length})
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className={`rounded-lg shadow-md p-6 ${isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'}`}>
         <DataTable
           columns={columns}
           data={bookings}
           loading={loading}
           onEdit={handleViewDetails}
+          editLabel="View"
           onDelete={tab === 'upcoming' ? (id) => handleCancelBooking(id) : null}
+          deleteLabel="Cancel"
         />
       </div>
 

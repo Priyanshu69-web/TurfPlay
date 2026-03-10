@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { USER_MENU_DATA, ADMIN_MENU_DATA } from '../utils/data';
 
 const DropdownMenu = ({ label }) => {
+    const { isDark } = useTheme();
     const [open, setOpen] = useState(false);
     const menuRef = useRef();
     const { user, logout } = useAuth();
@@ -49,7 +51,7 @@ const DropdownMenu = ({ label }) => {
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
+                <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg z-20 ${isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'}`}>
                     <ul className="py-1">
                         {menuData.map((item, idx) => (
                             <li
@@ -57,7 +59,7 @@ const DropdownMenu = ({ label }) => {
                                 onClick={() => {
                                     item.onClick?.();
                                 }}
-                                className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                className={`px-4 py-2 text-sm cursor-pointer ${isDark ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
                             >
                                 {item.icon && <span className="mr-2">{React.createElement(item.icon)}</span>}
                                 {item.label}

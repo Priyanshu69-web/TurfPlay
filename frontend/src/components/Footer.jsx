@@ -47,7 +47,7 @@ export default function Footer() {
                             <ul className="space-y-2">
                                 {links.map((link) => (
                                     <li key={link}>
-                                        <Link href="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                                        <Link to={link === "Book Now" ? "/booking" : link === "Browse Turfs" ? "/#popular-turfs" : link === "Contact Us" ? "/contact" : "#"} className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
                                             {link}
                                         </Link>
                                     </li>
@@ -83,13 +83,13 @@ export default function Footer() {
                         © 2024 TurfPlay. All rights reserved.
                     </p>
                     <div className="flex items-center space-x-6">
-                        <Link href="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                        <Link to="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
                             Privacy Policy
                         </Link>
-                        <Link href="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                        <Link to="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
                             Terms of Service
                         </Link>
-                        <Link href="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                        <Link to="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
                             Cookie Settings
                         </Link>
                     </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
-const DataTable = ({ columns, data, onEdit, onDelete, loading = false }) => {
+const DataTable = ({ columns, data, onEdit, onDelete, editLabel = "Edit", deleteLabel = "Delete", loading = false }) => {
   const { isDark } = useTheme();
 
   if (loading) {
@@ -50,7 +50,7 @@ const DataTable = ({ columns, data, onEdit, onDelete, loading = false }) => {
                           onClick={() => onEdit(row)}
                           className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                         >
-                          Edit
+                          {editLabel}
                         </button>
                       )}
                       {onDelete && (
@@ -58,7 +58,7 @@ const DataTable = ({ columns, data, onEdit, onDelete, loading = false }) => {
                           onClick={() => onDelete(row._id)}
                           className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                         >
-                          Delete
+                          {deleteLabel}
                         </button>
                       )}
                     </div>
