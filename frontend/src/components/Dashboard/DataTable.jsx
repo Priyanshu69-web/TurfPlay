@@ -1,9 +1,7 @@
 import React from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import Button from './Button';
 
 const DataTable = ({ columns, data, onEdit, onDelete, editLabel = "Edit", deleteLabel = "Delete", loading = false }) => {
-  const { isDark } = useTheme();
-
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -15,30 +13,30 @@ const DataTable = ({ columns, data, onEdit, onDelete, editLabel = "Edit", delete
   if (data.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>No data found</p>
+        <p className="text-muted">No data found</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="premium-scrollbar overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-100 border-gray-200'} border-b-2`}>
+        <thead className="border-b border-[var(--app-border)] bg-white/8">
           <tr>
             {columns.map((col) => (
-              <th key={col.key} className={`px-4 py-3 text-left font-semibold ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+              <th key={col.key} className="px-4 py-3 text-left font-semibold text-[var(--app-text)]">
                 {col.label}
               </th>
             ))}
-            {(onEdit || onDelete) && <th className={`px-4 py-3 text-left font-semibold ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Actions</th>}
+            {(onEdit || onDelete) && <th className="px-4 py-3 text-left font-semibold text-[var(--app-text)]">Actions</th>}
           </tr>
         </thead>
         <tbody>
           {data.map((row, idx) => (
             <React.Fragment key={row._id || idx}>
-              <tr className={`border-b ${isDark ? 'border-gray-800 hover:bg-gray-800/50' : 'border-gray-200 hover:bg-gray-50'}`}>
+              <tr className="border-b border-[var(--app-border)] transition hover:bg-white/6">
                 {columns.map((col) => (
-                  <td key={col.key} className={`px-4 py-3 ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+                  <td key={col.key} className="px-4 py-3 text-[var(--app-text)]">
                     {col.render ? col.render(row[col.key], row) : row[col.key]}
                   </td>
                 ))}
@@ -46,20 +44,22 @@ const DataTable = ({ columns, data, onEdit, onDelete, editLabel = "Edit", delete
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       {onEdit && (
-                        <button
+                        <Button
                           onClick={() => onEdit(row)}
-                          className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                          variant="secondary"
+                          size="sm"
                         >
                           {editLabel}
-                        </button>
+                        </Button>
                       )}
                       {onDelete && (
-                        <button
+                        <Button
                           onClick={() => onDelete(row._id)}
-                          className="px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                          variant="danger"
+                          size="sm"
                         >
                           {deleteLabel}
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>

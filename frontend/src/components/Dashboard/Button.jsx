@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTheme } from '../../context/ThemeContext';
 
 const Button = ({
   children,
@@ -10,19 +9,17 @@ const Button = ({
   disabled = false,
   className = '',
 }) => {
-  const { isDark } = useTheme();
-
   const variants = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondary: isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-100' : 'bg-gray-200 hover:bg-gray-300 text-gray-800',
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    success: 'bg-green-600 hover:bg-green-700 text-white',
+    primary: 'brand-gradient text-white shadow-lg shadow-emerald-500/20 hover:-translate-y-0.5',
+    secondary: 'border border-[var(--app-border)] bg-white/8 text-[var(--app-text)] hover:-translate-y-0.5 hover:bg-white/12',
+    danger: 'bg-rose-500 text-white hover:-translate-y-0.5 hover:bg-rose-600',
+    success: 'bg-emerald-500 text-white hover:-translate-y-0.5 hover:bg-emerald-600',
   };
 
   const sizes = {
-    sm: 'px-3 py-1 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: 'px-3 py-2 text-sm',
+    md: 'px-4 py-2.5 text-sm',
+    lg: 'px-6 py-3 text-base',
   };
 
   return (
@@ -31,7 +28,7 @@ const Button = ({
       onClick={onClick}
       disabled={disabled}
       className={`
-        rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+        rounded-2xl font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-50
         ${variants[variant]} ${sizes[size]} ${className}
       `}
     >

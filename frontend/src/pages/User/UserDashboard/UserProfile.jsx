@@ -4,13 +4,11 @@ import Card from '../../../components/Dashboard/Card';
 import Input from '../../../components/Dashboard/Input';
 import Button from '../../../components/Dashboard/Button';
 import { useAuth } from '../../../context/AuthContext';
-import { useTheme } from '../../../context/ThemeContext';
 import axiosInstance from '../../../utils/axiosInstance';
 import { toast } from 'sonner';
 
 const UserProfile = () => {
   const { user } = useAuth();
-  const { isDark } = useTheme();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
   const [profileData, setProfileData] = useState({
@@ -82,31 +80,29 @@ const UserProfile = () => {
     <div className="space-y-6">
       <DashboardHeader title="My Profile" subtitle="Manage your account information" />
 
-      {/* Tabs */}
-      <div className={`flex gap-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className="flex gap-4 border-b border-[var(--app-border)]">
         <button
           onClick={() => setActiveTab('profile')}
-          className={`px-4 py-3 font-medium border-b-2 transition ${
+          className={`border-b-2 px-4 py-3 font-medium transition ${
             activeTab === 'profile'
               ? 'border-green-500 text-green-500'
-              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-muted hover:text-[var(--app-text)]'
           }`}
         >
           Profile Information
         </button>
         <button
           onClick={() => setActiveTab('password')}
-          className={`px-4 py-3 font-medium border-b-2 transition ${
+          className={`border-b-2 px-4 py-3 font-medium transition ${
             activeTab === 'password'
               ? 'border-green-500 text-green-500'
-              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-muted hover:text-[var(--app-text)]'
           }`}
         >
           Change Password
         </button>
       </div>
 
-      {/* Profile Tab */}
       {activeTab === 'profile' && (
         <Card title="Profile Information" className="max-w-2xl">
           <form onSubmit={handleUpdateProfile} className="space-y-6">
@@ -144,7 +140,6 @@ const UserProfile = () => {
         </Card>
       )}
 
-      {/* Password Tab */}
       {activeTab === 'password' && (
         <Card title="Change Password" className="max-w-2xl">
           <form onSubmit={handleChangePassword} className="space-y-6">

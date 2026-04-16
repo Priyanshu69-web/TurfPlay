@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowDown, CalendarDays, Grid2x2, Star, TimerReset } from 'lucide-react';
 
 export default function Hero() {
     const [isVisible, setIsVisible] = useState(false);
@@ -42,14 +43,14 @@ export default function Hero() {
                             to="/booking"
                             className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-full text-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-green-500/25 cursor-pointer whitespace-nowrap text-center"
                         >
-                            <i className="ri-calendar-line mr-2"></i>
+                            <CalendarDays size={18} className="mr-2 inline-flex" />
                             Book Now
                         </Link>
                         <Link
                             to="/#popular-turfs"
                             className="border-2 border-white/20 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-all duration-300 backdrop-blur-sm cursor-pointer whitespace-nowrap text-center"
                         >
-                            <i className="ri-grid-line mr-2"></i>
+                            <Grid2x2 size={18} className="mr-2 inline-flex" />
                             View Turfs
                         </Link>
                     </div>
@@ -83,14 +84,14 @@ export default function Hero() {
                         {/* Floating UI Elements */}
                         <div className="absolute -top-8 -right-8 bg-black/70 backdrop-blur-lg rounded-xl p-4 border border-green-500/20 animate-float">
                             <div className="flex items-center space-x-2 text-green-400">
-                                <i className="ri-time-line"></i>
+                                <TimerReset size={16} />
                                 <span className="text-sm font-medium">Available Now</span>
                             </div>
                         </div>
 
                         <div className="absolute -bottom-8 -left-8 bg-black/70 backdrop-blur-lg rounded-xl p-4 border border-green-500/20 animate-float delay-500">
                             <div className="flex items-center space-x-2 text-green-400">
-                                <i className="ri-star-fill"></i>
+                                <Star size={16} fill="currentColor" />
                                 <span className="text-sm font-medium">4.9 Rating</span>
                             </div>
                         </div>
@@ -100,7 +101,7 @@ export default function Hero() {
 
             {/* Scroll Indicator */}
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/50 animate-bounce">
-                <i className="ri-arrow-down-line text-2xl"></i>
+                <ArrowDown size={24} />
             </div>
         </div>
     );

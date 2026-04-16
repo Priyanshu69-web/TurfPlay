@@ -155,8 +155,9 @@ TurfPlay/
 ## 🚀 Getting Started Checklist
 
 - [ ] Read QUICK_START.md (5 min)
-- [ ] Start backend: `npm start` (backend folder)
-- [ ] Start frontend: `npm run dev` (frontend folder)
+- [ ] Install dependencies: `pnpm install`
+- [ ] Start backend: `pnpm --dir backend dev`
+- [ ] Start frontend: `pnpm --dir frontend dev`
 - [ ] Visit http://localhost:3001
 - [ ] Register new user
 - [ ] Login

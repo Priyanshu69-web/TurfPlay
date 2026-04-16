@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CalendarDays, CheckCircle2, CircleDollarSign, Clock3, LifeBuoy, ShieldCheck, Sparkles, Trophy } from 'lucide-react';
 
 export default function BookingSection() {
     const navigate = useNavigate();
@@ -14,74 +15,81 @@ export default function BookingSection() {
     ];
 
     const sports = [
-        { id: 'football', name: 'Football', icon: 'ri-football-line' },
-        { id: 'cricket', name: 'Cricket', icon: 'ri-basketball-line' },
-        { id: 'tennis', name: 'Tennis', icon: 'ri-ping-pong-line' }
+        { id: 'football', name: 'Football', icon: Trophy },
+        { id: 'cricket', name: 'Cricket', icon: Sparkles },
+        { id: 'tennis', name: 'Tennis', icon: CheckCircle2 }
     ];
 
     return (
-        <section className="py-20 bg-gradient-to-b from-black to-gray-900">
-            <div className="max-w-7xl mx-auto px-8">
+        <section className="px-4 py-16 sm:px-6 lg:px-8">
+            <div className="surface-card-strong mx-auto max-w-7xl overflow-hidden p-6 sm:p-8 lg:p-10">
                 <div className="text-center mb-16">
-                    <h2 className="text-5xl font-bold text-white mb-6">
-                        Quick
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-600"> Booking</span>
+                    <span className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-500">
+                        Fast reservations
+                    </span>
+                    <h2 className="mt-5 text-4xl font-semibold text-[var(--app-text)] sm:text-5xl">
+                        Quick booking,
+                        <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent"> premium experience</span>
                     </h2>
-                    <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                    <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-muted sm:text-lg">
                         Book your preferred turf in seconds with our streamlined booking system. Select your sport, date, and time.
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Booking Form */}
-                    <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50">
-                        <h3 className="text-2xl font-bold text-white mb-8">Reserve Your Slot</h3>
+                    <div className="rounded-[1.75rem] border border-[var(--app-border)] bg-white/6 p-6 sm:p-8">
+                        <div className="mb-8 flex items-center justify-between gap-4">
+                            <div>
+                                <h3 className="text-2xl font-semibold text-[var(--app-text)]">Reserve your slot</h3>
+                                <p className="mt-2 text-sm text-muted">Fast selections, smooth on mobile, clear pricing.</p>
+                            </div>
+                            <div className="brand-gradient hidden h-12 w-12 items-center justify-center rounded-2xl text-white sm:flex">
+                                <CalendarDays size={20} />
+                            </div>
+                        </div>
 
                         <form onSubmit={(e) => { e.preventDefault(); navigate('/booking'); }} className="space-y-6">
-                            {/* Sport Selection */}
                             <div>
-                                <label className="block text-white font-medium mb-4">Select Sport</label>
+                                <label className="mb-4 block font-medium text-[var(--app-text)]">Select sport</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     {sports.map((sport) => (
                                         <button
                                             key={sport.id}
                                             type="button"
                                             onClick={() => setSelectedSport(sport.id)}
-                                            className={`p-4 rounded-xl border-2 transition-all duration-300 cursor-pointer whitespace-nowrap ${selectedSport === sport.id
-                                                ? 'border-green-500 bg-green-500/10 text-green-400'
-                                                : 'border-gray-600 hover:border-gray-500 text-gray-300'
+                                            className={`rounded-2xl border p-4 transition-all duration-300 ${selectedSport === sport.id
+                                                ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
+                                                : 'border-[var(--app-border)] bg-white/5 text-muted hover:border-emerald-500/50 hover:text-[var(--app-text)]'
                                                 }`}
                                         >
-                                            <i className={`${sport.icon} text-2xl block mb-2`}></i>
+                                            <sport.icon size={22} className="mx-auto mb-2" />
                                             <span className="text-sm font-medium">{sport.name}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Date Selection */}
                             <div>
-                                <label className="block text-white font-medium mb-4">Select Date</label>
+                                <label className="mb-4 block font-medium text-[var(--app-text)]">Select date</label>
                                 <input
                                     type="date"
                                     value={selectedDate}
                                     onChange={(e) => setSelectedDate(e.target.value)}
-                                    className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:border-green-500 focus:outline-none transition-colors"
+                                    className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 p-4 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
                                 />
                             </div>
 
-                            {/* Time Slots */}
                             <div>
-                                <label className="block text-white font-medium mb-4">Available Time Slots</label>
-                                <div className="grid grid-cols-3 gap-3 max-h-60 overflow-y-auto">
+                                <label className="mb-4 block font-medium text-[var(--app-text)]">Preferred time</label>
+                                <div className="premium-scrollbar grid max-h-60 grid-cols-2 gap-3 overflow-y-auto sm:grid-cols-3">
                                     {timeSlots.map((time) => (
                                         <button
                                             key={time}
                                             type="button"
                                             onClick={() => setSelectedTime(time)}
-                                            className={`p-3 rounded-lg border transition-all duration-300 cursor-pointer whitespace-nowrap ${selectedTime === time
-                                                ? 'border-green-500 bg-green-500/10 text-green-400'
-                                                : 'border-gray-600 hover:border-gray-500 text-gray-300'
+                                            className={`rounded-xl border px-3 py-3 text-sm transition-all duration-300 ${selectedTime === time
+                                                ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
+                                                : 'border-[var(--app-border)] bg-white/5 text-muted hover:border-emerald-500/50 hover:text-[var(--app-text)]'
                                                 }`}
                                         >
                                             {time}
@@ -90,10 +98,9 @@ export default function BookingSection() {
                                 </div>
                             </div>
 
-                            {/* Player Count */}
                             <div>
-                                <label className="block text-white font-medium mb-4">Number of Players</label>
-                                <select className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-xl text-white focus:border-green-500 focus:outline-none transition-colors pr-8">
+                                <label className="mb-4 block font-medium text-[var(--app-text)]">Number of players</label>
+                                <select className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 p-4 pr-8 text-[var(--app-text)] outline-none transition focus:border-emerald-500">
                                     <option>Select players</option>
                                     <option>1-5 players</option>
                                     <option>6-10 players</option>
@@ -103,58 +110,53 @@ export default function BookingSection() {
                                 </select>
                             </div>
 
-                            {/* Submit Button */}
                             <button
                                 type="submit"
-                                className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 cursor-pointer whitespace-nowrap"
+                                className="brand-gradient inline-flex w-full items-center justify-center gap-2 rounded-2xl px-8 py-4 text-lg font-semibold text-white transition duration-300 hover:-translate-y-0.5"
                             >
-                                <i className="ri-calendar-check-line mr-2"></i>
+                                <Clock3 size={20} />
                                 Book Now
                             </button>
                         </form>
                     </div>
 
-                    {/* Booking Benefits */}
                     <div className="space-y-8">
-                        <div className="flex items-start space-x-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                                <i className="ri-lightning-line text-white text-xl"></i>
+                        {[
+                            {
+                                icon: CheckCircle2,
+                                color: 'from-emerald-500 to-green-600',
+                                title: 'Instant confirmation',
+                                text: 'Get immediate booking confirmation with a clean checkout flow and rapid feedback.',
+                            },
+                            {
+                                icon: ShieldCheck,
+                                color: 'from-sky-500 to-cyan-500',
+                                title: 'Secure payments',
+                                text: 'Safe and encrypted payment processing with multiple payment methods available.',
+                            },
+                            {
+                                icon: CircleDollarSign,
+                                color: 'from-violet-500 to-fuchsia-500',
+                                title: 'Flexible changes',
+                                text: 'Cancel or reschedule your booking with clear slot states and lower friction.',
+                            },
+                            {
+                                icon: LifeBuoy,
+                                color: 'from-amber-500 to-orange-500',
+                                title: 'Responsive support',
+                                text: 'Round-the-clock support when plans shift or you need help with a booking.',
+                            },
+                        ].map((item) => (
+                            <div key={item.title} className="flex items-start space-x-4">
+                                <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-r ${item.color} text-white shadow-lg`}>
+                                    <item.icon size={20} />
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-semibold text-[var(--app-text)] mb-2">{item.title}</h4>
+                                    <p className="text-muted">{item.text}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h4 className="text-xl font-bold text-white mb-2">Instant Confirmation</h4>
-                                <p className="text-gray-300">Get immediate booking confirmation with QR code access to your reserved turf.</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start space-x-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                                <i className="ri-shield-check-line text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h4 className="text-xl font-bold text-white mb-2">Secure Payment</h4>
-                                <p className="text-gray-300">Safe and encrypted payment processing with multiple payment options available.</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start space-x-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                                <i className="ri-refresh-line text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h4 className="text-xl font-bold text-white mb-2">Flexible Cancellation</h4>
-                                <p className="text-gray-300">Cancel or reschedule your booking up to 2 hours before without any charges.</p>
-                            </div>
-                        </div>
-
-                        <div className="flex items-start space-x-4">
-                            <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center">
-                                <i className="ri-customer-service-line text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h4 className="text-xl font-bold text-white mb-2">24/7 Support</h4>
-                                <p className="text-gray-300">Round-the-clock customer support to assist you with any booking queries.</p>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
             </div>

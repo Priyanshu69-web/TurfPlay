@@ -1,5 +1,5 @@
-
 import { useState, useEffect } from 'react';
+import { CalendarCheck2, MapPin, ShieldCheck, Star, Users } from 'lucide-react';
 
 export default function Stats() {
     const [counters, setCounters] = useState({
@@ -38,28 +38,28 @@ export default function Stats() {
             label: 'Premium Turfs',
             value: counters.turfs,
             suffix: '+',
-            icon: 'ri-football-line',
+            icon: ShieldCheck,
             color: 'from-green-400 to-green-600'
         },
         {
             label: 'Bookings Completed',
             value: counters.bookings,
             suffix: '+',
-            icon: 'ri-calendar-check-line',
+            icon: CalendarCheck2,
             color: 'from-blue-400 to-blue-600'
         },
         {
             label: 'Happy Players',
             value: counters.players,
             suffix: '+',
-            icon: 'ri-group-line',
+            icon: Users,
             color: 'from-purple-400 to-purple-600'
         },
         {
             label: 'Cities Covered',
             value: counters.cities,
             suffix: '+',
-            icon: 'ri-map-pin-line',
+            icon: MapPin,
             color: 'from-yellow-400 to-yellow-600'
         }
     ];
@@ -86,7 +86,7 @@ export default function Stats() {
                                     <div className="absolute inset-0 rounded-full border-4 border-gray-700"></div>
                                     <div className={`absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r ${stat.color} animate-spin-slow`}></div>
                                     <div className="absolute inset-2 rounded-full bg-gray-900 flex items-center justify-center">
-                                        <i className={`${stat.icon} text-2xl text-white group-hover:scale-110 transition-transform duration-300`}></i>
+                                        <stat.icon className="text-white group-hover:scale-110 transition-transform duration-300" size={26} />
                                     </div>
                                 </div>
                             </div>
@@ -112,7 +112,7 @@ export default function Stats() {
                     <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 max-w-4xl mx-auto">
                         <div className="flex items-center justify-center mb-6">
                             {[...Array(5)].map((_, i) => (
-                                <i key={i} className="ri-star-fill text-yellow-400 text-2xl"></i>
+                                <Star key={i} size={22} className="text-yellow-400" fill="currentColor" />
                             ))}
                         </div>
                         <blockquote className="text-2xl text-white mb-6 italic">

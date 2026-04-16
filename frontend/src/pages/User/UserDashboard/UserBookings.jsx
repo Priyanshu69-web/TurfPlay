@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
 import DataTable from '../../../components/Dashboard/DataTable';
 import Modal from '../../../components/Dashboard/Modal';
-import { useTheme } from '../../../context/ThemeContext';
 import axiosInstance from '../../../utils/axiosInstance';
 import { API_PATHS } from '../../../utils/apiPath';
 import { toast } from 'sonner';
 
 const UserBookings = () => {
-  const { isDark } = useTheme();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState('upcoming');
@@ -22,8 +20,8 @@ const UserBookings = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const endpoint = tab === 'upcoming' 
-        ? API_PATHS.BOOKINGS.GET_UPCOMING 
+      const endpoint = tab === 'upcoming'
+        ? API_PATHS.BOOKINGS.GET_UPCOMING
         : API_PATHS.BOOKINGS.GET_HISTORY;
       const response = await axiosInstance.get(endpoint);
       setBookings(response.data.data || []);
@@ -60,7 +58,7 @@ const UserBookings = () => {
       key: 'status',
       label: 'Status',
       render: (val) => (
-        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
           val === 'confirmed'
             ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
             : val === 'pending'
@@ -77,31 +75,30 @@ const UserBookings = () => {
     <div className="space-y-6">
       <DashboardHeader title="My Bookings" subtitle="View your booking history and upcoming bookings" />
 
-      {/* Tabs */}
-      <div className={`flex gap-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+      <div className="flex gap-4 border-b border-[var(--app-border)]">
         <button
           onClick={() => setTab('upcoming')}
-          className={`px-4 py-3 font-medium border-b-2 transition ${
+          className={`border-b-2 px-4 py-3 font-medium transition ${
             tab === 'upcoming'
               ? 'border-green-500 text-green-500'
-              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-muted hover:text-[var(--app-text)]'
           }`}
         >
           Upcoming ({bookings.filter(b => new Date(b.date) > new Date()).length})
         </button>
         <button
           onClick={() => setTab('history')}
-          className={`px-4 py-3 font-medium border-b-2 transition ${
+          className={`border-b-2 px-4 py-3 font-medium transition ${
             tab === 'history'
               ? 'border-green-500 text-green-500'
-              : isDark ? 'border-transparent text-gray-400 hover:text-white' : 'border-transparent text-gray-600 hover:text-gray-900'
+              : 'border-transparent text-muted hover:text-[var(--app-text)]'
           }`}
         >
           History ({bookings.filter(b => new Date(b.date) <= new Date()).length})
         </button>
       </div>
 
-      <div className={`rounded-lg shadow-md p-6 ${isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'}`}>
+      <div className="surface-card p-6">
         <DataTable
           columns={columns}
           data={bookings}
@@ -113,7 +110,6 @@ const UserBookings = () => {
         />
       </div>
 
-      {/* Booking Details Modal */}
       <Modal
         isOpen={showModal}
         title="Booking Details"
@@ -122,34 +118,34 @@ const UserBookings = () => {
       >
         {selectedBooking && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="font-semibold text-gray-700">Turf:</label>
-                <p className="text-gray-600">{selectedBooking.turfId?.name}</p>
+                <label className="font-semibold text-[var(--app-text)]">Turf:</label>
+                <p className="text-muted">{selectedBooking.turfId?.name}</p>
               </div>
               <div>
-                <label className="font-semibold text-gray-700">Location:</label>
-                <p className="text-gray-600">{selectedBooking.turfId?.location}</p>
+                <label className="font-semibold text-[var(--app-text)]">Location:</label>
+                <p className="text-muted">{selectedBooking.turfId?.location}</p>
               </div>
               <div>
-                <label className="font-semibold text-gray-700">Date:</label>
-                <p className="text-gray-600">
+                <label className="font-semibold text-[var(--app-text)]">Date:</label>
+                <p className="text-muted">
                   {new Date(selectedBooking.date).toLocaleDateString()}
                 </p>
               </div>
               <div>
-                <label className="font-semibold text-gray-700">Time:</label>
-                <p className="text-gray-600">
+                <label className="font-semibold text-[var(--app-text)]">Time:</label>
+                <p className="text-muted">
                   {selectedBooking.startTime} - {selectedBooking.endTime}
                 </p>
               </div>
               <div>
-                <label className="font-semibold text-gray-700">Amount:</label>
-                <p className="text-gray-600 font-semibold">₹{selectedBooking.amount}</p>
+                <label className="font-semibold text-[var(--app-text)]">Amount:</label>
+                <p className="font-semibold text-[var(--app-text)]">₹{selectedBooking.amount}</p>
               </div>
               <div>
-                <label className="font-semibold text-gray-700">Status:</label>
-                <p className="text-gray-600 capitalize">{selectedBooking.status}</p>
+                <label className="font-semibold text-[var(--app-text)]">Status:</label>
+                <p className="capitalize text-muted">{selectedBooking.status}</p>
               </div>
             </div>
           </div>

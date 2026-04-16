@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Zap } from 'lucide-react';
+import { Calendar, Clock3, MapPin, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
 import Card from '../../../components/Dashboard/Card';
 import { useAuth } from '../../../context/AuthContext';
 import axiosInstance from '../../../utils/axiosInstance';
 import { API_PATHS } from '../../../utils/apiPath';
-import { toast } from 'sonner';
 
 const UserHome = () => {
   const { user } = useAuth();
@@ -34,88 +34,89 @@ const UserHome = () => {
     <div className="space-y-6">
       <DashboardHeader
         title={`Welcome, ${user?.name}!`}
-        subtitle="Manage your bookings and profile"
+        subtitle="Manage your bookings, track your next matches, and keep your profile updated."
       />
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Upcoming Bookings</p>
-              <p className="text-3xl font-bold text-gray-900">{upcomingBookings.length}</p>
+              <p className="mb-1 text-sm text-muted">Upcoming Bookings</p>
+              <p className="text-3xl font-semibold text-[var(--app-text)]">{loading ? '...' : upcomingBookings.length}</p>
             </div>
-            <Calendar size={40} className="text-blue-600 opacity-50" />
+            <div className="rounded-2xl bg-sky-500/10 p-4 text-sky-500">
+              <Calendar size={32} />
+            </div>
           </div>
         </Card>
         <Card>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-600 text-sm mb-1">Total Bookings</p>
-              <p className="text-3xl font-bold text-gray-900">{totalBookings}</p>
+              <p className="mb-1 text-sm text-muted">Total Bookings</p>
+              <p className="text-3xl font-semibold text-[var(--app-text)]">{loading ? '...' : totalBookings}</p>
             </div>
-            <Zap size={40} className="text-green-600 opacity-50" />
+            <div className="rounded-2xl bg-emerald-500/10 p-4 text-emerald-500">
+              <Sparkles size={32} />
+            </div>
           </div>
         </Card>
       </div>
 
-      {/* Upcoming Bookings */}
       <Card title="Your Upcoming Bookings">
         {upcomingBookings.length === 0 ? (
-          <p className="text-gray-600 text-center py-8">
+          <p className="py-8 text-center text-muted">
             No upcoming bookings.{' '}
-            <a href="/booking" className="text-blue-600 hover:underline">
+            <Link to="/booking" className="font-semibold text-emerald-500 hover:underline">
               Book a slot now!
-            </a>
+            </Link>
           </p>
         ) : (
           <div className="space-y-4">
             {upcomingBookings.map((booking) => (
-              <div key={booking._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-gray-900">{booking.turfId?.name}</h4>
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+              <div key={booking._id} className="rounded-[1.35rem] border border-[var(--app-border)] bg-white/6 p-4 transition hover:bg-white/10">
+                <div className="mb-2 flex items-start justify-between gap-3">
+                  <h4 className="font-semibold text-[var(--app-text)]">{booking.turfId?.name}</h4>
+                  <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold capitalize text-emerald-500">
                     {booking.status}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">📍 {booking.turfId?.location}</p>
-                <p className="text-sm text-gray-600">
-                  📅 {new Date(booking.date).toLocaleDateString()} • {booking.startTime} - {booking.endTime}
-                </p>
-                <p className="text-sm font-semibold text-gray-900 mt-2">₹{booking.amount}</p>
+                <div className="space-y-2 text-sm text-muted">
+                  <p className="flex items-center gap-2"><MapPin size={15} /> {booking.turfId?.location}</p>
+                  <p className="flex items-center gap-2"><Clock3 size={15} /> {new Date(booking.date).toLocaleDateString()} • {booking.startTime} - {booking.endTime}</p>
+                </div>
+                <p className="mt-3 text-sm font-semibold text-[var(--app-text)]">₹{booking.amount}</p>
               </div>
             ))}
           </div>
         )}
       </Card>
 
-      {/* Quick Actions */}
       <Card title="Quick Actions">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <a
-            href="/booking"
-            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center font-medium transition"
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Link
+            to="/booking"
+            className="brand-gradient rounded-2xl px-4 py-3 text-center font-medium text-white transition hover:-translate-y-0.5"
           >
             Book New Slot
-          </a>
-          <a
-            href="/user/bookings"
-            className="px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-center font-medium transition"
+          </Link>
+          <Link
+            to="/user/dashboard/bookings"
+            className="rounded-2xl border border-[var(--app-border)] bg-white/8 px-4 py-3 text-center font-medium text-[var(--app-text)] transition hover:-translate-y-0.5"
           >
             View All Bookings
-          </a>
-          <a
-            href="/user/profile"
-            className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center font-medium transition"
+          </Link>
+          <Link
+            to="/user/dashboard/profile"
+            className="rounded-2xl border border-[var(--app-border)] bg-white/8 px-4 py-3 text-center font-medium text-[var(--app-text)] transition hover:-translate-y-0.5"
           >
             Edit Profile
-          </a>
-          <a
-            href="/contact"
-            className="px-4 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-center font-medium transition"
+          </Link>
+          <Link
+            to="/contact"
+            className="rounded-2xl border border-[var(--app-border)] bg-white/8 px-4 py-3 text-center font-medium text-[var(--app-text)] transition hover:-translate-y-0.5"
           >
             Contact Support
-          </a>
+          </Link>
         </div>
       </Card>
     </div>

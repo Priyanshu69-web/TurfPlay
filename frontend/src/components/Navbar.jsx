@@ -1,53 +1,51 @@
-import React, { useState } from 'react'
-import { motion } from 'motion/react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { useNavigate, Link, NavLink } from 'react-router-dom';
 import DropdownMenu from './DropDownMenu';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
-import { Moon, Sun } from 'lucide-react';
+import ThemeToggle from './ui/ThemeToggle';
+import { Menu, X, Sparkles } from 'lucide-react';
 
 function Navigation() {
     const { user, logout, loading } = useAuth();
-    const { isDark, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
         navigate("/login");
-    }
+    };
+
     if (loading) return null;
 
-    return (
-        <ul className='nav-ul flex gap-4 items-center flex-col sm:flex-row'>
-            <li className='nav-li'>
-                <a href="/" className='nav-link hover:backdrop-blur-lg'>Home</a>
-            </li>
-            <li className='nav-li'>
-                <a href="/booking" className='nav-link'>Book Slot</a>
-            </li>
-            <li className='nav-li'>
-                <a href="/contact" className='nav-link'>Contact</a>
-            </li>
+    const links = [
+        { label: 'Home', to: '/' },
+        { label: 'Book Slot', to: '/booking' },
+        { label: 'Contact', to: '/contact' },
+    ];
 
-            {/* Theme Toggle Button */}
+    return (
+        <ul className='nav-ul flex gap-2 items-center flex-col sm:flex-row'>
+            {links.map((link) => (
+                <li key={link.to} className='nav-li'>
+                    <NavLink
+                        to={link.to}
+                        className={({ isActive }) =>
+                            `nav-link ${isActive ? 'bg-white/12 text-[var(--app-text)] shadow-sm' : ''}`
+                        }
+                    >
+                        {link.label}
+                    </NavLink>
+                </li>
+            ))}
+
             <li className='nav-li'>
-                <button
-                    onClick={toggleTheme}
-                    className='p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors'
-                    title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                >
-                    {isDark ? (
-                        <Sun size={20} className='text-yellow-400' />
-                    ) : (
-                        <Moon size={20} className='text-gray-700' />
-                    )}
-                </button>
+                <ThemeToggle />
             </li>
 
             {user ? (<>
                 <li className='nav-li'><DropdownMenu label={user.name} /></li>
                 <li className='nav-li'>
-                    <button onClick={handleLogout} className='nav-link'>Logout</button>
+                    <button onClick={handleLogout} className='nav-link text-rose-500'>Logout</button>
                 </li>
             </>
             ) : (
@@ -57,43 +55,61 @@ function Navigation() {
                     </li>
                 </>
             )}
-        </ul >
-    )
+        </ul>
+    );
 }
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const { isDark } = useTheme();
 
     return (
-        <div className={`sticky top-0 inset-x-0 z-20 w-full backdrop-blur-lg ${isDark ? 'bg-gray-900/80' : 'bg-white/80'} p-4 px-6 shadow-lg border-b ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
-            <div className='mx-auto c-space max-w-7xl'>
-                <div className='flex items-center justify-between py-2 sm:py-0'>
+        <header className="sticky top-0 inset-x-0 z-40 px-3 py-3 sm:px-6">
+            <div className='surface-card mx-auto max-w-7xl px-4 py-3 sm:px-6'>
+                <div className='flex items-center justify-between gap-4 py-1'>
                     <Link to="/">
-                        <div className="flex items-center space-x-2">
-                            <h1 className={`text-2xl font-bold font-pacifico ${isDark ? 'text-white' : 'text-gray-800'}`}>TurfPlay</h1>
+                        <div className="flex items-center gap-3">
+                            <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+                                <Sparkles size={18} />
+                            </div>
+                            <div>
+                                <h1 className="text-xl font-semibold tracking-tight text-[var(--app-text)] sm:text-2xl">TurfPlay</h1>
+                                <p className="text-xs uppercase tracking-[0.24em] text-muted">Premium turf booking</p>
+                            </div>
                         </div>
                     </Link>
-                    <button onClick={() => setIsOpen(!isOpen)} className={`flex cursor-pointer ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} focus:outline-none sm:hidden`}>
-                        <img src={isOpen ? "/assets/close.svg" : "/assets/menu.svg"} className='w-6 h-6' alt='toggle' />
+
+                    <button
+                        type="button"
+                        onClick={() => setIsOpen(!isOpen)}
+                        className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-white/5 text-[var(--app-text)] transition hover:bg-white/10 sm:hidden"
+                    >
+                        {isOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
+
                     <nav className='hidden sm:flex'>
                         <Navigation />
                     </nav>
                 </div>
             </div>
-            {isOpen && (<motion.div className={`block overflow-hidden text-center sm:hidden ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                style={{ maxHeight: "100vh" }}
-                transition={{ duration: 1 }}
-            >
-                <nav className='pb-5'>
-                    <Navigation />
-                </nav>
-            </motion.div>)}
-        </div>
-    )
-}
 
-export default Navbar
+            <AnimatePresence>
+                {isOpen ? (
+                    <motion.div
+                        className="mx-3 mt-3 sm:hidden sm:px-6"
+                        initial={{ opacity: 0, y: -12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                    >
+                        <div className="surface-card px-4 py-5 text-center">
+                            <nav className='pb-1'>
+                                <Navigation />
+                            </nav>
+                        </div>
+                    </motion.div>
+                ) : null}
+            </AnimatePresence>
+        </header>
+    );
+};
+
+export default Navbar;

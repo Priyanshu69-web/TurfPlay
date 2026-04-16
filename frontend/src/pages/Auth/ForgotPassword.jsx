@@ -1,15 +1,10 @@
 import { useState } from "react";
-import EmailInput from "../../components/ui/EmailInput";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { motion } from "motion/react";
+import { ArrowRight, Mail } from "lucide-react";
 import { useForgotPasswordMutation } from "../../redux/api/authApi";
-import { motion } from "framer-motion";
-
-const GlassCard = ({ children, className = "" }) => (
-  <div className={`backdrop-blur-lg bg-black/30 border border-white/10 rounded-2xl p-8 ${className}`}>
-    {children}
-  </div>
-);
+import AuthShell from "../../components/ui/AuthShell";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -28,60 +23,56 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black text-white overflow-x-hidden flex items-center justify-center py-12 px-4">
-      {/* Animated Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 left-20 w-96 h-96 bg-green-500/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-green-400/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
-      </div>
+    <AuthShell
+      eyebrow="Password recovery"
+      title="Forgot password?"
+      subtitle="Enter your email and we’ll send a reset code so you can get back in quickly."
+    >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-white/6 p-4">
+          <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white">
+            <Mail size={18} />
+          </div>
+          <div>
+            <p className="font-semibold text-[var(--app-text)]">Email recovery</p>
+            <p className="text-sm text-muted">We’ll guide you through verification and reset.</p>
+          </div>
+        </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
-      >
-        <GlassCard>
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2">Forgot Password?</h1>
-            <p className="text-gray-300">Enter your email to reset your password</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="w-full">
+            <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">
+              Email Address
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] placeholder:text-slate-400 focus:border-emerald-500/50 focus:outline-none"
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="w-full">
-              <label className="block text-sm font-semibold mb-2 text-gray-200">
-                Email Address
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:border-green-500/50 focus:bg-white/20 transition"
-                required
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="brand-gradient flex w-full items-center justify-center gap-2 rounded-2xl py-3 font-semibold text-white transition disabled:opacity-50"
+          >
+            {isLoading ? "Sending..." : <>Send Reset Code <ArrowRight size={18} /></>}
+          </button>
+        </form>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold hover:shadow-lg hover:shadow-green-500/50 transition disabled:opacity-50"
-            >
-              {isLoading ? "Sending..." : "Send Reset Code"}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              Remember your password?{" "}
-              <Link to="/login" className="text-green-400 hover:text-green-300 font-semibold">
-                Login
-              </Link>
-            </p>
-          </div>
-        </GlassCard>
+        <div className="mt-6 text-center text-sm">
+          <p className="text-muted">
+            Remember your password?{" "}
+            <Link to="/login" className="font-semibold text-emerald-500 hover:text-emerald-400">
+              Login
+            </Link>
+          </p>
+        </div>
       </motion.div>
-    </div>
+    </AuthShell>
   );
 };
 

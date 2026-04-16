@@ -1,9 +1,7 @@
 import React from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { X } from 'lucide-react';
 
 const Modal = ({ isOpen, title, onClose, children, size = 'md' }) => {
-  const { isDark } = useTheme();
-
   if (!isOpen) return null;
 
   const sizeClasses = {
@@ -15,16 +13,16 @@ const Modal = ({ isOpen, title, onClose, children, size = 'md' }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className={`rounded-lg shadow-xl ${sizeClasses[size]} w-full max-h-[90vh] overflow-auto ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
-        <div className={`sticky top-0 border-b ${isDark ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} p-6`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm">
+      <div className={`surface-card-strong ${sizeClasses[size]} w-full max-h-[90vh] overflow-auto`}>
+        <div className="sticky top-0 border-b border-[var(--app-border)] bg-[color:var(--app-surface-strong)] p-6">
           <div className="flex justify-between items-center">
-            <h2 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{title}</h2>
+            <h2 className="text-xl font-semibold text-[var(--app-text)]">{title}</h2>
             <button
               onClick={onClose}
-              className={`text-2xl leading-none ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-700'}`}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[var(--app-border)] text-muted transition hover:text-[var(--app-text)]"
             >
-              ×
+              <X size={18} />
             </button>
           </div>
         </div>

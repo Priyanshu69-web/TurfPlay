@@ -1,9 +1,22 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import {
+  AlertCircle,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  CreditCard,
+  MapPin,
+  Phone,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  XCircle,
+} from "lucide-react";
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import { useAuth } from "../context/AuthContext";
-import toast from "react-hot-toast";
 
 const Booking = () => {
   const [turfs, setTurfs] = useState([]);
@@ -20,18 +33,19 @@ const Booking = () => {
     notes: "",
     paymentMethod: "online",
   });
+
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch turfs on mount
   useEffect(() => {
     const fetchTurfs = async () => {
       try {
         setLoading(true);
         const response = await axiosInstance.get(API_PATHS.TURF.GET_ALL);
-        setTurfs(response.data.data || []);
-        if (response.data.data && response.data.data.length > 0) {
-          setSelectedTurf(response.data.data[0]);
+        const nextTurfs = response.data.data || [];
+        setTurfs(nextTurfs);
+        if (nextTurfs.length > 0) {
+          setSelectedTurf(nextTurfs[0]);
         }
       } catch (error) {
         toast.error("Failed to fetch turfs");
@@ -44,13 +58,11 @@ const Booking = () => {
     fetchTurfs();
   }, []);
 
-  // Set default date to today
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setSelectedDate(today);
+    const todayDate = new Date().toISOString().split("T")[0];
+    setSelectedDate(todayDate);
   }, []);
 
-  // Fetch slots when date or turf changes
   useEffect(() => {
     if (!selectedTurf || !selectedDate) return;
 
@@ -79,6 +91,15 @@ const Booking = () => {
     fetchSlots();
   }, [selectedTurf, selectedDate]);
 
+  const slotStats = useMemo(() => ({
+    total: slots.length,
+    available: slots.filter((slot) => slot.status === "available").length,
+    booked: slots.filter((slot) => slot.status === "booked").length,
+    blocked: slots.filter((slot) => slot.status === "blocked").length,
+  }), [slots]);
+
+  const today = new Date().toISOString().split("T")[0];
+
   const handleBooking = async () => {
     if (!user) {
       toast.error("Please login to book a slot");
@@ -86,8 +107,8 @@ const Booking = () => {
       return;
     }
 
-    if (!selectedSlot) {
-      toast.error("Please select a slot");
+    if (!selectedSlot || selectedSlot.status !== "available") {
+      toast.error("Please select an available slot");
       return;
     }
 
@@ -121,208 +142,363 @@ const Booking = () => {
     }
   };
 
-  // Get minimum date (today)
-  const today = new Date().toISOString().split("T")[0];
+  const statusConfig = {
+    available: {
+      label: "Available",
+      className: "border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:border-emerald-500",
+      icon: CheckCircle2,
+      legendClassName: "bg-emerald-500",
+    },
+    booked: {
+      label: "Booked",
+      className: "border-amber-500/20 bg-amber-500/10 text-amber-500 opacity-80 cursor-not-allowed",
+      icon: AlertCircle,
+      legendClassName: "bg-amber-500",
+    },
+    blocked: {
+      label: "Blocked",
+      className: "border-rose-500/20 bg-rose-500/10 text-rose-500 opacity-80 cursor-not-allowed",
+      icon: XCircle,
+      legendClassName: "bg-rose-500",
+    },
+  };
 
   return (
-    <>
-      <div className="min-h-screen bg-base-100 p-4 md:p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 text-center">Book Your Turf</h1>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Column - Selection */}
-            <div className="space-y-6">
-              {/* Turf Selection */}
-              <div className="card bg-base-200 shadow-xl">
-                <div className="card-body">
-                  <h2 className="card-title">Select Turf</h2>
-                  {loading ? (
-                    <div className="flex justify-center py-4">
-                      <span className="loading loading-spinner"></span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {turfs.map((turf) => (
-                        <button
-                          key={turf._id}
-                          onClick={() => setSelectedTurf(turf)}
-                          className={`btn btn-block text-left ${selectedTurf?._id === turf._id
-                            ? "btn-primary"
-                            : "btn-ghost"
-                            }`}
-                        >
-                          <div className="text-left w-full">
-                            <p className="font-bold">{turf.name}</p>
-                            <p className="text-sm opacity-75">{turf.location}</p>
-                          </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Date Selection */}
-              <div className="card bg-base-200 shadow-xl">
-                <div className="card-body">
-                  <h2 className="card-title">Select Date</h2>
-                  <input
-                    type="date"
-                    min={today}
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    className="input input-bordered w-full"
-                  />
-                </div>
-              </div>
+    <div className="app-shell overflow-x-hidden px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative z-10 mx-auto max-w-7xl space-y-8">
+        <section className="surface-card-strong hero-grid overflow-hidden p-6 sm:p-8 lg:p-10">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
+            <div>
+              <span className="inline-flex rounded-full border border-emerald-400/20 bg-emerald-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-500">
+                Smooth slot booking
+              </span>
+              <h1 className="mt-5 text-4xl font-semibold text-[var(--app-text)] sm:text-5xl">
+                Book the right turf
+                <span className="bg-gradient-to-r from-emerald-500 to-teal-400 bg-clip-text text-transparent"> without second guessing availability</span>
+              </h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-muted sm:text-lg">
+                Clear slot states, polished mobile interactions, and a premium booking summary help players move from discovery to confirmation faster.
+              </p>
             </div>
 
-            {/* Right Column - Slots */}
-            <div className="card bg-base-200 shadow-xl">
-              <div className="card-body">
-                <h2 className="card-title">
-                  Available Slots - {selectedDate}
-                </h2>
-
-                {slotLoading ? (
-                  <div className="flex justify-center py-8">
-                    <span className="loading loading-spinner"></span>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                { label: "Available today", value: slotStats.available, icon: CheckCircle2, tone: "text-emerald-500 bg-emerald-500/10" },
+                { label: "Already booked", value: slotStats.booked, icon: AlertCircle, tone: "text-amber-500 bg-amber-500/10" },
+                { label: "Admin blocked", value: slotStats.blocked, icon: XCircle, tone: "text-rose-500 bg-rose-500/10" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-[1.5rem] border border-[var(--app-border)] bg-white/6 p-5">
+                  <div className={`inline-flex rounded-2xl p-3 ${item.tone}`}>
+                    <item.icon size={20} />
                   </div>
-                ) : slots.length === 0 ? (
-                  <div className="alert alert-warning">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="stroke-current shrink-0 h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 9v2m0 4v2m0 4v2M7.08 6.47A9 9 0 1119.02 19.95M9 9h.01M15 9h.01M9 15h.01M15 15h.01"
-                      />
-                    </svg>
-                    <span>No available slots for this date</span>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2 max-h-96 overflow-y-auto">
-                    {slots
-                      .filter((slot) => slot.status === "available")
-                      .map((slot) => (
-                        <button
-                          key={slot._id}
-                          onClick={() => setSelectedSlot(slot)}
-                          className={`btn btn-sm ${selectedSlot?._id === slot._id
-                            ? "btn-primary"
-                            : "btn-outline"
-                            }`}
-                        >
-                          {slot.startTime} - {slot.endTime}
-                        </button>
-                      ))}
-                  </div>
-                )}
-
-                {/* Booking Details */}
-                {selectedSlot && selectedTurf && (
-                  <div className="space-y-4 mt-4">
-                    <div className="alert alert-info">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        className="stroke-current shrink-0 w-6 h-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        ></path>
-                      </svg>
-                      <div>
-                        <p className="font-bold">Amount: ₹{selectedTurf.pricePerSlot}</p>
-                      </div>
-                    </div>
-
-                    {/* Player Details */}
-                    <div className="space-y-3 bg-base-300 p-4 rounded-lg">
-                      <h3 className="font-bold text-sm">Player Details</h3>
-                      
-                      <input
-                        type="text"
-                        placeholder="Player Name"
-                        value={bookingDetails.playerName}
-                        onChange={(e) => setBookingDetails({...bookingDetails, playerName: e.target.value})}
-                        className="input input-bordered input-sm w-full"
-                      />
-                      
-                      <input
-                        type="tel"
-                        placeholder="Phone Number (10 digits)"
-                        maxLength="10"
-                        value={bookingDetails.playerPhone}
-                        onChange={(e) => setBookingDetails({...bookingDetails, playerPhone: e.target.value.replace(/\D/g, '').slice(0, 10)})}
-                        className="input input-bordered input-sm w-full"
-                      />
-                      
-                      <input
-                        type="number"
-                        placeholder="Number of Players"
-                        min="1"
-                        value={bookingDetails.playerCount}
-                        onChange={(e) => setBookingDetails({...bookingDetails, playerCount: parseInt(e.target.value)})}
-                        className="input input-bordered input-sm w-full"
-                      />
-
-                      <select
-                        value={bookingDetails.paymentMethod}
-                        onChange={(e) => setBookingDetails({...bookingDetails, paymentMethod: e.target.value})}
-                        className="select select-bordered select-sm w-full"
-                      >
-                        <option value="online">Online Payment</option>
-                        <option value="cash">Cash on Site</option>
-                        <option value="upi">UPI</option>
-                      </select>
-
-                      <textarea
-                        placeholder="Special requests (optional)"
-                        value={bookingDetails.notes}
-                        onChange={(e) => setBookingDetails({...bookingDetails, notes: e.target.value})}
-                        className="textarea textarea-bordered w-full text-sm"
-                        rows="2"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleBooking}
-                  disabled={!selectedSlot || !user || !bookingDetails.playerName || !bookingDetails.playerPhone}
-                  className="btn btn-primary btn-block mt-4"
-                >
-                  Confirm Booking
-                </button>
-
-                {!user && (
-                  <p className="text-sm text-warning mt-2">
-                    Please{" "}
-                    <a href="/login" className="link">
-                      login
-                    </a>{" "}
-                    to book
-                  </p>
-                )}
-              </div>
+                  <p className="mt-4 text-sm text-muted">{item.label}</p>
+                  <p className="mt-2 text-3xl font-semibold text-[var(--app-text)]">{item.value}</p>
+                </div>
+              ))}
             </div>
           </div>
+        </section>
+
+        <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+          <section className="space-y-6">
+            <div className="surface-card p-6">
+              <div className="mb-5 flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-[var(--app-text)]">Choose your venue</h2>
+                  <p className="mt-1 text-sm text-muted">Pick a turf, then a date to load live slot states.</p>
+                </div>
+                <div className="brand-gradient hidden h-12 w-12 items-center justify-center rounded-2xl text-white sm:flex">
+                  <MapPin size={18} />
+                </div>
+              </div>
+
+              {loading ? (
+                <div className="flex justify-center py-10">
+                  <span className="loading loading-spinner loading-lg"></span>
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {turfs.map((turf) => {
+                    const isSelected = selectedTurf?._id === turf._id;
+                    return (
+                      <button
+                        key={turf._id}
+                        type="button"
+                        onClick={() => setSelectedTurf(turf)}
+                        className={`rounded-[1.35rem] border p-4 text-left transition ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-500/10"
+                            : "border-[var(--app-border)] bg-white/5 hover:border-emerald-500/40 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-lg font-semibold text-[var(--app-text)]">{turf.name}</p>
+                            <div className="mt-2 flex items-center gap-2 text-sm text-muted">
+                              <MapPin size={15} />
+                              {turf.location}
+                            </div>
+                          </div>
+                          <div className="rounded-2xl border border-[var(--app-border)] bg-white/8 px-4 py-2 text-sm font-semibold text-[var(--app-text)]">
+                            ₹{turf.pricePerSlot}
+                            <span className="ml-1 font-normal text-muted">/ slot</span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="surface-card p-6">
+              <div className="grid gap-5 sm:grid-cols-[1fr_auto] sm:items-end">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[var(--app-text)]">Select booking date</label>
+                  <div className="relative">
+                    <CalendarDays size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                    <input
+                      type="date"
+                      min={today}
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                      className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 py-3 pl-12 pr-4 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  {["available", "booked", "blocked"].map((status) => (
+                    <div key={status} className="inline-flex items-center gap-2 rounded-full border border-[var(--app-border)] bg-white/6 px-3 py-2 text-sm text-muted">
+                      <span className={`h-2.5 w-2.5 rounded-full ${statusConfig[status].legendClassName}`}></span>
+                      {statusConfig[status].label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="surface-card p-6">
+              <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold text-[var(--app-text)]">Select your slot</h2>
+                  <p className="text-sm text-muted">
+                    {selectedDate ? `Showing slots for ${selectedDate}` : "Select a date first"}
+                  </p>
+                </div>
+                <div className="rounded-full border border-[var(--app-border)] bg-white/6 px-3 py-2 text-sm text-muted">
+                  {slotStats.total} total slots
+                </div>
+              </div>
+
+              {slotLoading ? (
+                <div className="flex justify-center py-12">
+                  <span className="loading loading-spinner loading-lg"></span>
+                </div>
+              ) : slots.length === 0 ? (
+                <div className="rounded-[1.4rem] border border-amber-500/20 bg-amber-500/10 p-6 text-sm text-amber-600 dark:text-amber-400">
+                  No slots are available for this date yet. Try another turf or generate future availability from the admin panel.
+                </div>
+              ) : (
+                <div className="premium-scrollbar grid max-h-[30rem] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 xl:grid-cols-3">
+                  {slots.map((slot) => {
+                    const isActive = selectedSlot?._id === slot._id;
+                    const config = statusConfig[slot.status] || statusConfig.available;
+                    const SlotIcon = config.icon;
+                    const isDisabled = slot.status !== "available";
+
+                    return (
+                      <button
+                        key={slot._id}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`slot-status-ring rounded-[1.35rem] border p-4 text-left transition ${config.className} ${
+                          isActive ? "ring-2 ring-emerald-400" : ""
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2 text-sm font-semibold">
+                              <Clock3 size={16} />
+                              {slot.startTime} - {slot.endTime}
+                            </div>
+                            <p className="mt-2 text-xs uppercase tracking-[0.22em]">{config.label}</p>
+                          </div>
+                          <SlotIcon size={18} />
+                        </div>
+                        {slot.status === "blocked" && slot.blockedReason ? (
+                          <p className="mt-3 text-xs leading-5 opacity-90">{slot.blockedReason}</p>
+                        ) : null}
+                        {slot.status === "booked" ? (
+                          <p className="mt-3 text-xs leading-5 opacity-90">This slot is already reserved and cannot be booked.</p>
+                        ) : null}
+                        {slot.status === "available" ? (
+                          <p className="mt-3 text-xs leading-5 opacity-90">Ready to book now.</p>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <aside className="space-y-6 lg:sticky lg:top-28 lg:self-start">
+            <section className="surface-card-strong p-6">
+              <div className="mb-5 flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-xl font-semibold text-[var(--app-text)]">Booking summary</h2>
+                  <p className="mt-1 text-sm text-muted">Review your selection before confirming.</p>
+                </div>
+                <div className="brand-gradient hidden h-12 w-12 items-center justify-center rounded-2xl text-white sm:flex">
+                  <Sparkles size={18} />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-[1.35rem] border border-[var(--app-border)] bg-white/6 p-4">
+                  <p className="text-sm text-muted">Selected turf</p>
+                  <p className="mt-1 text-lg font-semibold text-[var(--app-text)]">{selectedTurf?.name || "Choose a turf"}</p>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-muted">
+                    <MapPin size={15} />
+                    {selectedTurf?.location || "Location will appear here"}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-[1.35rem] border border-[var(--app-border)] bg-white/6 p-4">
+                    <p className="text-sm text-muted">Date</p>
+                    <p className="mt-1 font-semibold text-[var(--app-text)]">{selectedDate || "Not selected"}</p>
+                  </div>
+                  <div className="rounded-[1.35rem] border border-[var(--app-border)] bg-white/6 p-4">
+                    <p className="text-sm text-muted">Time</p>
+                    <p className="mt-1 font-semibold text-[var(--app-text)]">
+                      {selectedSlot ? `${selectedSlot.startTime} - ${selectedSlot.endTime}` : "Select a slot"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[1.35rem] border border-emerald-500/20 bg-emerald-500/10 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-sm text-muted">Amount payable</p>
+                      <p className="mt-1 text-2xl font-semibold text-[var(--app-text)]">₹{selectedTurf?.pricePerSlot || 0}</p>
+                    </div>
+                    <div className="rounded-2xl bg-white/20 p-3 text-emerald-600 dark:text-emerald-300">
+                      <CreditCard size={20} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="surface-card p-6">
+              <h3 className="text-lg font-semibold text-[var(--app-text)]">Player details</h3>
+              <div className="mt-5 space-y-4">
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--app-text)]">
+                    <Users size={15} />
+                    Player name
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Player Name"
+                    value={bookingDetails.playerName}
+                    onChange={(e) => setBookingDetails({ ...bookingDetails, playerName: e.target.value })}
+                    className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--app-text)]">
+                    <Phone size={15} />
+                    Phone number
+                  </span>
+                  <input
+                    type="tel"
+                    placeholder="10-digit mobile number"
+                    maxLength="10"
+                    value={bookingDetails.playerPhone}
+                    onChange={(e) =>
+                      setBookingDetails({
+                        ...bookingDetails,
+                        playerPhone: e.target.value.replace(/\D/g, "").slice(0, 10),
+                      })
+                    }
+                    className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--app-text)]">
+                    <Users size={15} />
+                    Player count
+                  </span>
+                  <input
+                    type="number"
+                    min="1"
+                    value={bookingDetails.playerCount}
+                    onChange={(e) =>
+                      setBookingDetails({
+                        ...bookingDetails,
+                        playerCount: Math.max(1, parseInt(e.target.value || "1", 10)),
+                      })
+                    }
+                    className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--app-text)]">
+                    <CreditCard size={15} />
+                    Payment method
+                  </span>
+                  <select
+                    value={bookingDetails.paymentMethod}
+                    onChange={(e) => setBookingDetails({ ...bookingDetails, paymentMethod: e.target.value })}
+                    className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
+                  >
+                    <option value="online">Online payment</option>
+                    <option value="cash">Cash on site</option>
+                    <option value="upi">UPI</option>
+                  </select>
+                </label>
+
+                <label className="block">
+                  <span className="mb-2 flex items-center gap-2 text-sm font-medium text-[var(--app-text)]">
+                    <ShieldCheck size={15} />
+                    Notes
+                  </span>
+                  <textarea
+                    placeholder="Special requests (optional)"
+                    value={bookingDetails.notes}
+                    onChange={(e) => setBookingDetails({ ...bookingDetails, notes: e.target.value })}
+                    className="min-h-28 w-full rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] outline-none transition focus:border-emerald-500"
+                  />
+                </label>
+              </div>
+
+              <button
+                onClick={handleBooking}
+                disabled={!selectedSlot || !user || selectedSlot.status !== "available" || !bookingDetails.playerName || !bookingDetails.playerPhone}
+                className="brand-gradient mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 font-semibold text-white transition duration-300 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <CheckCircle2 size={18} />
+                Confirm Booking
+              </button>
+
+              {!user ? (
+                <p className="mt-3 text-sm text-amber-500">
+                  Please <a href="/login" className="font-semibold underline">login</a> to complete your booking.
+                </p>
+              ) : null}
+            </section>
+          </aside>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
 export default Booking;
-

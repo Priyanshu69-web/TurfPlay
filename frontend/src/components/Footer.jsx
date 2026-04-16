@@ -1,53 +1,66 @@
-
 import { Link } from 'react-router-dom';
+import { CalendarClock, CircleHelp, Instagram, Linkedin, Mail, MapPin, Phone, ShieldCheck, Sparkles, Twitter } from 'lucide-react';
 
 export default function Footer() {
     const footerLinks = {
-        Platform: ['Browse Turfs', 'Book Now', 'Tournaments', 'Teams', 'Mobile App'],
-        Support: ['Help Center', 'Contact Us', 'Live Chat', 'FAQ', 'Feedback'],
-        Company: ['About Us', 'Careers', 'Press', 'Partners', 'Investors'],
-        Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Data Protection', 'Compliance']
+        Platform: ['Browse Turfs', 'Book Now', 'Live Availability', 'Flexible Scheduling'],
+        Support: ['Help Center', 'Contact Us', 'FAQ', 'Feedback'],
+        Company: ['About Us', 'Careers', 'Partners', 'Press'],
+        Legal: ['Privacy Policy', 'Terms of Service', 'Cookie Policy', 'Compliance']
     };
 
+    const socialLinks = [
+        { icon: Instagram, label: 'Instagram' },
+        { icon: Twitter, label: 'Twitter' },
+        { icon: Linkedin, label: 'LinkedIn' },
+    ];
+
     return (
-        <footer className="bg-black border-t border-gray-800">
-            <div className="max-w-7xl mx-auto px-8 py-16">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-8">
-                    {/* Brand Section */}
-                    <div className="lg:col-span-2">
-                        <div className="flex items-center space-x-2 mb-6">
-                            <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center">
-                                <i className="ri-football-line text-white text-xl"></i>
+        <footer className="relative z-10 px-4 pb-6 pt-10 sm:px-6">
+            <div className="surface-card mx-auto max-w-7xl overflow-hidden px-6 py-10 sm:px-8 lg:px-10">
+                <div className="grid grid-cols-1 gap-10 lg:grid-cols-[1.3fr_repeat(4,minmax(0,1fr))]">
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white shadow-lg shadow-emerald-500/20">
+                                <Sparkles size={18} />
                             </div>
-                            <h3 className="text-2xl font-bold text-white font-pacifico">TurfPlay</h3>
+                            <div>
+                                <h3 className="text-2xl font-semibold text-[var(--app-text)]">TurfPlay</h3>
+                                <p className="text-sm text-muted">Modern facility operations for players and teams.</p>
+                            </div>
                         </div>
-                        <p className="text-gray-300 mb-6 leading-relaxed">
-                            Revolutionizing sports facility booking with cutting-edge technology and premium turfs. Your game, your way.
+                        <p className="max-w-md text-sm leading-7 text-muted">
+                            A polished booking experience for premium sports venues, with real-time availability, confident operations, and a UI that feels ready for production.
                         </p>
-                        <div className="flex space-x-4">
-                            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors cursor-pointer">
-                                <i className="ri-facebook-fill text-white"></i>
-                            </a>
-                            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors cursor-pointer">
-                                <i className="ri-twitter-x-fill text-white"></i>
-                            </a>
-                            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors cursor-pointer">
-                                <i className="ri-instagram-line text-white"></i>
-                            </a>
-                            <a href="#" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-green-600 transition-colors cursor-pointer">
-                                <i className="ri-linkedin-fill text-white"></i>
-                            </a>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            {[
+                                { icon: Mail, label: 'contact@turfplay.com' },
+                                { icon: Phone, label: '+91 90000 00000' },
+                                { icon: MapPin, label: 'India operations' },
+                                { icon: CalendarClock, label: 'Open daily, 24/7 bookings' },
+                            ].map((item) => (
+                                <div key={item.label} className="flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-white/5 px-4 py-3">
+                                    <item.icon size={16} className="text-emerald-500" />
+                                    <span className="text-sm text-muted">{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex gap-3">
+                            {socialLinks.map((item) => (
+                                <a key={item.label} href="#" className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-white/5 text-muted transition hover:-translate-y-0.5 hover:text-[var(--app-text)]">
+                                    <item.icon size={18} />
+                                </a>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Links Sections */}
                     {Object.entries(footerLinks).map(([category, links]) => (
-                        <div key={category}>
-                            <h4 className="text-white font-semibold mb-4">{category}</h4>
+                        <div key={category} className="space-y-4">
+                            <h4 className="text-sm font-semibold uppercase tracking-[0.2em] text-[var(--app-text)]">{category}</h4>
                             <ul className="space-y-2">
                                 {links.map((link) => (
                                     <li key={link}>
-                                        <Link to={link === "Book Now" ? "/booking" : link === "Browse Turfs" ? "/#popular-turfs" : link === "Contact Us" ? "/contact" : "#"} className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                                        <Link to={link === "Book Now" ? "/booking" : link === "Browse Turfs" ? "/#popular-turfs" : link === "Contact Us" ? "/contact" : "#"} className="text-sm text-muted transition hover:text-emerald-500">
                                             {link}
                                         </Link>
                                     </li>
@@ -57,41 +70,46 @@ export default function Footer() {
                     ))}
                 </div>
 
-                {/* Newsletter */}
-                <div className="mt-12 pt-8 border-t border-gray-800">
-                    <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
+                <div className="mt-10 rounded-[1.5rem] border border-[var(--app-border)] bg-white/5 p-6">
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            <h4 className="text-white font-semibold mb-2">Stay Updated</h4>
-                            <p className="text-gray-400">Get the latest news and exclusive offers</p>
+                            <div className="mb-2 flex items-center gap-2 text-[var(--app-text)]">
+                                <ShieldCheck size={18} className="text-emerald-500" />
+                                <h4 className="font-semibold">Stay Updated</h4>
+                            </div>
+                            <p className="text-sm text-muted">Product updates, venue drops, and premium offers. No spam.</p>
                         </div>
-                        <div className="flex space-x-4">
+                        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
                             <input
                                 type="email"
                                 placeholder="Enter your email"
-                                className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:border-green-500 focus:outline-none"
+                                className="min-w-0 rounded-2xl border border-[var(--app-border)] bg-white/10 px-4 py-3 text-[var(--app-text)] outline-none transition focus:border-emerald-500 sm:min-w-[18rem]"
                             />
-                            <button className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 cursor-pointer whitespace-nowrap">
+                            <button className="brand-gradient rounded-2xl px-6 py-3 font-medium text-white transition hover:-translate-y-0.5">
                                 Subscribe
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
-                <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-                    <p className="text-gray-400">
-                        © 2024 TurfPlay. All rights reserved.
+                <div className="mt-8 flex flex-col gap-4 border-t border-[var(--app-border)] pt-8 md:flex-row md:items-center md:justify-between">
+                    <p className="text-sm text-muted">
+                        © 2026 TurfPlay. All rights reserved.
                     </p>
-                    <div className="flex items-center space-x-6">
-                        <Link to="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                    <div className="flex flex-wrap items-center gap-5 text-sm text-muted">
+                        <Link to="#" className="transition hover:text-emerald-500">
                             Privacy Policy
                         </Link>
-                        <Link to="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                        <Link to="#" className="transition hover:text-emerald-500">
                             Terms of Service
                         </Link>
-                        <Link to="#" className="text-gray-400 hover:text-green-400 transition-colors cursor-pointer">
+                        <Link to="#" className="transition hover:text-emerald-500">
                             Cookie Settings
                         </Link>
+                        <div className="flex items-center gap-2">
+                            <CircleHelp size={16} />
+                            Support ready
+                        </div>
                     </div>
                 </div>
             </div>
