@@ -65,28 +65,28 @@ export default function Stats() {
     ];
 
     return (
-        <section className="py-20 bg-gradient-to-b from-gray-900 to-black">
-            <div className="max-w-7xl mx-auto px-8">
+        <section className="py-16 sm:py-20">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <h2 className="text-5xl font-bold text-white mb-6">
+                    <h2 className="mb-6 text-4xl font-bold sm:text-5xl">
                         Our
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-600"> Impact</span>
                     </h2>
-                    <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                    <p className="mx-auto max-w-3xl text-lg text-muted sm:text-xl">
                         Join thousands of sports enthusiasts who trust TurfPlay for their sporting needs across the globe.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div className="grid grid-cols-2 gap-6 lg:grid-cols-4">
                     {stats.map((stat, index) => (
                         <div key={index} className="text-center group">
                             <div className="relative mb-6">
                                 {/* Animated Circle */}
-                                <div className="w-24 h-24 mx-auto relative">
-                                    <div className="absolute inset-0 rounded-full border-4 border-gray-700"></div>
+                                <div className="relative mx-auto h-20 w-20 sm:h-24 sm:w-24">
+                                    <div className="absolute inset-0 rounded-full border-4 border-[var(--app-border)]"></div>
                                     <div className={`absolute inset-0 rounded-full border-4 border-transparent bg-gradient-to-r ${stat.color} animate-spin-slow`}></div>
-                                    <div className="absolute inset-2 rounded-full bg-gray-900 flex items-center justify-center">
-                                        <stat.icon className="text-white group-hover:scale-110 transition-transform duration-300" size={26} />
+                                    <div className="absolute inset-2 flex items-center justify-center rounded-full bg-[var(--app-bg-secondary)]">
+                                        <stat.icon className="text-[var(--app-text)] transition-transform duration-300 group-hover:scale-110" size={24} />
                                     </div>
                                 </div>
                             </div>
@@ -102,20 +102,20 @@ export default function Stats() {
                             </div>
 
                             {/* Label */}
-                            <p className="text-gray-300 font-medium">{stat.label}</p>
+                            <p className="font-medium text-muted">{stat.label}</p>
                         </div>
                     ))}
                 </div>
 
                 {/* Testimonial */}
                 <div className="mt-20 text-center">
-                    <div className="bg-gray-800/30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 max-w-4xl mx-auto">
+                    <div className="soft-panel mx-auto max-w-4xl rounded-[1.75rem] p-6 sm:p-8">
                         <div className="flex items-center justify-center mb-6">
                             {[...Array(5)].map((_, i) => (
                                 <Star key={i} size={22} className="text-yellow-400" fill="currentColor" />
                             ))}
                         </div>
-                        <blockquote className="text-2xl text-white mb-6 italic">
+                        <blockquote className="mb-6 text-xl italic text-[var(--app-text)] sm:text-2xl">
                             "TurfPlay has revolutionized how we book sports facilities. The seamless experience and premium turfs make every game memorable."
                         </blockquote>
                         <div className="flex items-center justify-center space-x-4">
@@ -125,8 +125,8 @@ export default function Stats() {
                                 className="w-12 h-12 rounded-full object-cover"
                             />
                             <div>
-                                <p className="text-white font-semibold">Marcus Johnson</p>
-                                <p className="text-gray-400">Team Captain, City FC</p>
+                                <p className="font-semibold text-[var(--app-text)]">Marcus Johnson</p>
+                                <p className="text-muted">Team Captain, City FC</p>
                             </div>
                         </div>
                     </div>

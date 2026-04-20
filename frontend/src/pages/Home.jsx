@@ -8,7 +8,7 @@ import PopularTurfs from '../components/PopularTurfs';
 // Reusable glass card component
 const GlassCard = ({ children, className = '' }) => (
     <div
-        className={`backdrop-blur-lg bg-black/20 border border-white/10 rounded-2xl p-6 ${className}`}
+        className={`soft-panel rounded-[1.5rem] p-5 sm:p-6 ${className}`}
     >
         {children}
     </div>
@@ -16,7 +16,7 @@ const GlassCard = ({ children, className = '' }) => (
 
 const Home = () => {
     return (
-        <div className="min-h-screen bg-gradient-to-t from-gray-900 to-black text-white overflow-x-hidden">
+        <div className="min-h-screen overflow-x-hidden text-[var(--app-text)]">
             {/* Hero Section
             <section className="relative py-20 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto text-center relative z-10">
@@ -59,13 +59,13 @@ const Home = () => {
             <Hero />
 
             {/* How It Works */}
-            <section className=" border-t border-gray-700 py-12 px-4 sm:px-6 lg:px-8">
+            <section className="border-t border-[var(--app-border)] px-4 py-12 sm:px-6 lg:px-8">
                 <div className="max-w-6xl mx-auto">
-                    <h2 className="text-5xl font-bold text-center text-white mb-6">
+                    <h2 className="mb-6 text-center text-4xl font-bold sm:text-5xl">
                         How It
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-600"> Works</span>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:gap-6">
                         {[
                             { step: 1, title: 'Choose Turf', icon: '🏟️' },
                             { step: 2, title: 'Select Time Slot', icon: '🕒' },
@@ -76,17 +76,17 @@ const Home = () => {
                                 whileHover={{ y: -8 }}
                                 className="text-center"
                             >
-                                <GlassCard className="h-full flex flex-col items-center justify-center gap-4">
+                                <GlassCard className="flex h-full flex-col items-center justify-center gap-3">
                                     <div className="text-4xl">{item.icon}</div>
                                     <div className="text-green-400 font-bold">Step {item.step}</div>
-                                    <h3 className="text-xl font-semibold">{item.title}</h3>
+                                    <h3 className="text-lg font-semibold sm:text-xl">{item.title}</h3>
                                 </GlassCard>
                             </motion.div>
                         ))}
                     </div>
                 </div>
             </section>
-            <section className="border-t border-gray-700 my-12 mx-4 sm:mx-6 lg:mx-8">
+            <section className="mx-4 my-12 border-t border-[var(--app-border)] sm:mx-6 lg:mx-8">
                 <BookingSection />
             </section>
 
@@ -113,7 +113,7 @@ const Home = () => {
             </section> */}
 
             {/* Popular Turfs */}
-            <section className=" border-t border-gray-700 py-12 px-4 sm:px-6 lg:px-8">
+            <section className="border-t border-[var(--app-border)] px-4 py-12 sm:px-6 lg:px-8">
                 <PopularTurfs />
             </section>
 
@@ -134,7 +134,7 @@ const Home = () => {
                     </ul>
                 </GlassCard>
             </section> */}
-            <section className="border-t border-gray-700 my-12 mx-4 sm:mx-6 lg:mx-8">
+            <section className="mx-4 my-12 border-t border-[var(--app-border)] sm:mx-6 lg:mx-8">
                 <Stats />
             </section>
 

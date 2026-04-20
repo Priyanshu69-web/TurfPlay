@@ -17,14 +17,14 @@ export default function PopularTurfs() {
   const turfs = data?.data || [];
 
   return (
-    <section id="popular-turfs" className="py-20 bg-gradient-to-b from-gray-900 to-black scroll-mt-20">
-      <div className="max-w-7xl mx-auto px-8">
+    <section id="popular-turfs" className="scroll-mt-20 py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-5xl font-bold text-white mb-6">
+          <h2 className="mb-6 text-4xl font-bold sm:text-5xl">
             Popular
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-green-600"> Turfs</span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="mx-auto max-w-3xl text-lg text-muted sm:text-xl">
             Discover premium sports facilities equipped with state-of-the-art amenities and professional-grade equipment.
           </p>
         </div>
@@ -34,7 +34,7 @@ export default function PopularTurfs() {
             <Loader2 className="w-12 h-12 text-green-500 animate-spin" />
           </div>
         ) : turfs.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
+          <div className="py-16 text-center text-muted">
             <p>No turfs available yet. Check back soon!</p>
             <Link to="/booking" className="mt-4 inline-block text-green-400 hover:text-green-300 font-medium">
               Go to Booking
@@ -42,7 +42,7 @@ export default function PopularTurfs() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
               {turfs.map((turf) => {
                 const facilities = turf.facilities || [];
                 const amenities = turf.amenities
@@ -55,10 +55,10 @@ export default function PopularTurfs() {
                 return (
                   <div
                     key={turf._id}
-                    className="group relative bg-gray-800/30 backdrop-blur-sm rounded-2xl overflow-hidden border border-gray-700/50 hover:border-green-500/30 transition-all duration-500"
+                    className="soft-panel group relative overflow-hidden rounded-[1.5rem] transition-all duration-500 hover:border-green-500/30"
                   >
                     {/* Image */}
-                    <div className="relative overflow-hidden h-48 bg-gray-800">
+                    <div className="relative h-48 overflow-hidden bg-slate-200/60 dark:bg-slate-800">
                       {turf.images?.[0] ? (
                         <img
                           src={turf.images[0]}
@@ -66,7 +66,7 @@ export default function PopularTurfs() {
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-green-900/30 to-gray-800">
+                        <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-green-500/10 to-slate-700/20">
                           <span className="text-6xl opacity-50">🏟️</span>
                         </div>
                       )}
@@ -75,10 +75,10 @@ export default function PopularTurfs() {
 
                     {/* Content */}
                     <div className="p-6">
-                      <h3 className="text-xl font-bold text-white mb-2 group-hover:text-green-400 transition-colors">
+                      <h3 className="mb-2 text-xl font-bold text-[var(--app-text)] transition-colors group-hover:text-green-500">
                         {turf.name}
                       </h3>
-                      <p className="text-gray-400 mb-4 flex items-center gap-1">
+                      <p className="mb-4 flex items-center gap-1 text-muted">
                         <MapPin size={14} />
                         {turf.location}
                       </p>
@@ -89,7 +89,7 @@ export default function PopularTurfs() {
                           {allFacilities.slice(0, 4).map((f) => (
                             <span
                               key={f}
-                              className="bg-gray-700/50 text-gray-300 px-3 py-1 rounded-full text-xs capitalize"
+                              className="rounded-full border border-[var(--app-border)] bg-white/10 px-3 py-1 text-xs capitalize text-muted"
                             >
                               {FACILITY_ICONS[f] || '•'} {f.replace(/([A-Z])/g, ' $1').trim()}
                             </span>
@@ -104,7 +104,7 @@ export default function PopularTurfs() {
                         </div>
                         <Link
                           to="/booking"
-                          className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full hover:from-green-600 hover:to-green-700 transition-all duration-300 transform hover:scale-105 text-sm font-medium whitespace-nowrap"
+                          className="brand-gradient whitespace-nowrap rounded-full px-6 py-2 text-sm font-medium text-white transition-all duration-300 hover:scale-[1.02]"
                         >
                           Book Now
                         </Link>
@@ -119,7 +119,7 @@ export default function PopularTurfs() {
             <div className="text-center mt-12">
               <Link
                 to="/booking"
-                className="inline-flex items-center gap-2 border-2 border-green-500 text-green-400 px-8 py-4 rounded-full text-lg font-semibold hover:bg-green-500 hover:text-white transition-all duration-300"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-green-500 px-8 py-4 text-lg font-semibold text-green-500 transition-all duration-300 hover:bg-green-500 hover:text-white"
               >
                 <span>View All Turfs & Book</span>
               </Link>
