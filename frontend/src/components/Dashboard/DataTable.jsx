@@ -1,75 +1,95 @@
 import React from 'react';
+import {
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
 import Button from './Button';
 
-const DataTable = ({ columns, data, onEdit, onDelete, editLabel = "Edit", deleteLabel = "Delete", loading = false }) => {
+const DataTable = ({
+  columns,
+  data,
+  onEdit,
+  onDelete,
+  editLabel = 'Edit',
+  deleteLabel = 'Delete',
+  loading = false,
+  emptyText = 'No data found',
+}) => {
   if (loading) {
     return (
-      <div className="flex justify-center py-8">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-  }
-
-  if (data.length === 0) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-muted">No data found</p>
-      </div>
+      <Paper variant="outlined" sx={{ p: 8, textAlign: 'center' }}>
+        <Typography variant="body1" color="text.secondary">
+          Loading…
+        </Typography>
+      </Paper>
     );
   }
 
   return (
-    <div className="premium-scrollbar overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead className="border-b border-[var(--app-border)] bg-white/8">
-          <tr>
+    <TableContainer component={Paper} variant="outlined" sx={{ overflowX: 'auto' }}>
+      <Table size="small" sx={{ minWidth: 720 }}>
+        <TableHead>
+          <TableRow>
             {columns.map((col) => (
-              <th key={col.key} className="px-4 py-3 text-left font-semibold text-[var(--app-text)]">
-                {col.label}
-              </th>
+              <TableCell key={col.key}>{col.label}</TableCell>
             ))}
-            {(onEdit || onDelete) && <th className="px-4 py-3 text-left font-semibold text-[var(--app-text)]">Actions</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, idx) => (
-            <React.Fragment key={row._id || idx}>
-              <tr className="border-b border-[var(--app-border)] transition hover:bg-white/6">
+            {(onEdit || onDelete) ? <TableCell align="right">Actions</TableCell> : null}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {!data.length ? (
+            <TableRow>
+              <TableCell colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}>
+                <Box sx={{ py: 8, textAlign: 'center' }}>
+                  <Typography variant="body1" color="text.secondary">
+                    {emptyText}
+                  </Typography>
+                </Box>
+              </TableCell>
+            </TableRow>
+          ) : (
+            data.map((row, idx) => (
+              <TableRow
+                key={row._id || idx}
+                hover
+                sx={{
+                  '&:last-child td': { borderBottom: 0 },
+                }}
+              >
                 {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3 text-[var(--app-text)]">
+                  <TableCell key={col.key}>
                     {col.render ? col.render(row[col.key], row) : row[col.key]}
-                  </td>
+                  </TableCell>
                 ))}
-                {(onEdit || onDelete) && (
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      {onEdit && (
-                        <Button
-                          onClick={() => onEdit(row)}
-                          variant="secondary"
-                          size="sm"
-                        >
+                {(onEdit || onDelete) ? (
+                  <TableCell align="right">
+                    <Box sx={{ display: 'inline-flex', gap: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      {onEdit ? (
+                        <Button onClick={() => onEdit(row)} variant="secondary" size="sm">
                           {editLabel}
                         </Button>
-                      )}
-                      {onDelete && (
-                        <Button
-                          onClick={() => onDelete(row._id)}
-                          variant="danger"
-                          size="sm"
-                        >
+                      ) : null}
+                      {onDelete ? (
+                        <Button onClick={() => onDelete(row._id)} variant="danger" size="sm">
                           {deleteLabel}
                         </Button>
-                      )}
-                    </div>
-                  </td>
-                )}
-              </tr>
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                      ) : null}
+                    </Box>
+                  </TableCell>
+                ) : null}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

@@ -1,4 +1,12 @@
 import React from 'react';
+import MuiButton from '@mui/material/Button';
+
+const variantMap = {
+  primary: { variant: 'contained', color: 'primary' },
+  secondary: { variant: 'outlined', color: 'inherit' },
+  danger: { variant: 'contained', color: 'error' },
+  success: { variant: 'contained', color: 'success' },
+};
 
 const Button = ({
   children,
@@ -8,32 +16,27 @@ const Button = ({
   size = 'md',
   disabled = false,
   className = '',
+  startIcon = null,
+  fullWidth = false,
+  ...props
 }) => {
-  const variants = {
-    primary: 'brand-gradient text-white shadow-lg shadow-emerald-500/20 hover:-translate-y-0.5',
-    secondary: 'border border-[var(--app-border)] bg-white/8 text-[var(--app-text)] hover:-translate-y-0.5 hover:bg-white/12',
-    danger: 'bg-rose-500 text-white hover:-translate-y-0.5 hover:bg-rose-600',
-    success: 'bg-emerald-500 text-white hover:-translate-y-0.5 hover:bg-emerald-600',
-  };
-
-  const sizes = {
-    sm: 'px-3 py-2 text-sm',
-    md: 'px-4 py-2.5 text-sm',
-    lg: 'px-6 py-3 text-base',
-  };
+  const mapped = variantMap[variant] || variantMap.primary;
 
   return (
-    <button
+    <MuiButton
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`
-        rounded-2xl font-medium transition duration-200 disabled:cursor-not-allowed disabled:opacity-50
-        ${variants[variant]} ${sizes[size]} ${className}
-      `}
+      variant={mapped.variant}
+      color={mapped.color}
+      size={size === 'lg' ? 'medium' : 'small'}
+      startIcon={startIcon}
+      fullWidth={fullWidth}
+      className={className}
+      {...props}
     >
       {children}
-    </button>
+    </MuiButton>
   );
 };
 

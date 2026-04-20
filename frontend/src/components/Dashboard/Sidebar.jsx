@@ -1,85 +1,205 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronRight, Menu, ShieldCheck, Sparkles, X } from 'lucide-react';
+import React from 'react';
+import {
+  Avatar,
+  Box,
+  Divider,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Stack,
+  Tooltip,
+  Typography,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import {
+  DASHBOARD_DRAWER_COLLAPSED,
+  DASHBOARD_DRAWER_WIDTH,
+} from './dashboardTheme';
 
-const Sidebar = ({ menuItems }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
+const SidebarContent = ({ menuItems, collapsed, onNavigate }) => {
+  const theme = useTheme();
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
 
-  const isActive = (path) => location.pathname.startsWith(path);
+  return (
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', px: 1.5, py: 1.5 }}>
+      <Stack
+        direction="row"
+        spacing={1.5}
+        alignItems="center"
+        sx={{
+          px: 1,
+          py: 1,
+          minHeight: 56,
+        }}
+      >
+        <Avatar
+          variant="rounded"
+          sx={{
+            width: 36,
+            height: 36,
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+          }}
+        >
+          {user?.role === 1 ? <ShieldCheck size={18} /> : <Sparkles size={18} />}
+        </Avatar>
+
+        {!collapsed ? (
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h2" noWrap>
+              TurfPlay
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+              {user?.role === 1 ? 'Admin panel' : 'User dashboard'}
+            </Typography>
+          </Box>
+        ) : null}
+      </Stack>
+
+      {!collapsed ? (
+        <Box
+          sx={{
+            mt: 1.5,
+            px: 1.5,
+            py: 1.5,
+            borderRadius: 2.5,
+            border: `1px solid ${theme.palette.divider}`,
+            bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.04),
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+            Signed in as
+          </Typography>
+          <Typography variant="body1" sx={{ mt: 1, fontWeight: 600 }} noWrap>
+            {user?.name || 'User'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {user?.email || 'No email'}
+          </Typography>
+        </Box>
+      ) : null}
+
+      <Divider sx={{ my: 2 }} />
+
+      <List disablePadding sx={{ flex: 1 }}>
+        {menuItems.map((item) => {
+          const active = item.path.endsWith('/dashboard')
+            ? location.pathname === item.path || location.pathname === `${item.path}/`
+            : location.pathname.startsWith(item.path);
+
+          const content = (
+            <ListItemButton
+              selected={active}
+              onClick={() => {
+                navigate(item.path);
+                onNavigate?.();
+              }}
+              sx={{
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                px: collapsed ? 1 : 1.25,
+                '&.Mui-selected': {
+                  bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.12),
+                  color: 'primary.main',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: collapsed ? 0 : 34 }}>
+                <item.icon size={18} />
+              </ListItemIcon>
+              {!collapsed ? (
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    variant: 'body1',
+                    fontWeight: active ? 600 : 500,
+                    noWrap: true,
+                  }}
+                />
+              ) : null}
+            </ListItemButton>
+          );
+
+          return collapsed ? (
+            <Tooltip key={item.path} title={item.label} placement="right">
+              {content}
+            </Tooltip>
+          ) : (
+            <React.Fragment key={item.path}>{content}</React.Fragment>
+          );
+        })}
+      </List>
+
+      {!collapsed ? (
+        <Box
+          sx={{
+            mt: 1.5,
+            px: 1.5,
+            py: 1.5,
+            borderRadius: 2.5,
+            bgcolor: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.14 : 0.08),
+            border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+          }}
+        >
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            Operations live
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Bookings, slots, and support flows stay visible without oversized panels.
+          </Typography>
+        </Box>
+      ) : null}
+    </Box>
+  );
+};
+
+const Sidebar = ({ menuItems, mobileOpen, onMobileClose, collapsed }) => {
+  const theme = useTheme();
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-4 z-50 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-[var(--app-border)] bg-[color:var(--app-surface-strong)] text-[var(--app-text)] shadow-lg backdrop-blur-xl lg:hidden"
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={onMobileClose}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', lg: 'none' },
+          '& .MuiDrawer-paper': {
+            width: DASHBOARD_DRAWER_WIDTH,
+            boxSizing: 'border-box',
+          },
+        }}
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+        <SidebarContent menuItems={menuItems} collapsed={false} onNavigate={onMobileClose} />
+      </Drawer>
 
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`fixed left-0 top-0 z-40 h-screen w-72 transform transition-transform duration-300 ease-in-out lg:sticky lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        }`}
+      <Drawer
+        variant="permanent"
+        open
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          width: collapsed ? DASHBOARD_DRAWER_COLLAPSED : DASHBOARD_DRAWER_WIDTH,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: collapsed ? DASHBOARD_DRAWER_COLLAPSED : DASHBOARD_DRAWER_WIDTH,
+            boxSizing: 'border-box',
+            overflowX: 'hidden',
+            bgcolor: theme.palette.background.paper,
+            transition: theme.transitions.create('width', {
+              duration: theme.transitions.duration.shorter,
+            }),
+          },
+        }}
       >
-        <div className="m-3 flex h-[calc(100vh-1.5rem)] flex-col overflow-hidden rounded-[1.75rem] border border-[var(--app-border)] bg-[color:var(--app-surface-strong)] p-4 shadow-2xl backdrop-blur-xl">
-          <div className="border-b border-[var(--app-border)] px-3 pb-5 pt-3">
-            <div className="flex items-center gap-3">
-              <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white">
-                {user?.role === 1 ? <ShieldCheck size={18} /> : <Sparkles size={18} />}
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-[var(--app-text)]">TurfPlay</h1>
-                <p className="text-xs uppercase tracking-[0.22em] text-muted">
-                  {user?.role === 1 ? 'Admin panel' : 'User dashboard'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-2xl border border-[var(--app-border)] bg-white/5 px-4 py-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-muted">Signed in as</p>
-            <p className="mt-2 truncate text-sm font-semibold text-[var(--app-text)]">{user?.name || 'User'}</p>
-            <p className="truncate text-sm text-muted">{user?.email}</p>
-          </div>
-
-          <nav className="premium-scrollbar mt-6 flex-1 space-y-2 overflow-y-auto pr-1">
-            {menuItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => {
-                  navigate(item.path);
-                  setIsOpen(false);
-                }}
-                className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition ${
-                  isActive(item.path)
-                    ? 'brand-gradient text-white shadow-lg shadow-emerald-500/20'
-                    : 'text-muted hover:bg-white/8 hover:text-[var(--app-text)]'
-                }`}
-              >
-                <item.icon size={18} />
-                <span className="flex-1 font-medium">{item.label}</span>
-                <ChevronRight size={16} className={isActive(item.path) ? 'opacity-100' : 'opacity-40'} />
-              </button>
-            ))}
-          </nav>
-
-          <div className="mt-4 rounded-2xl border border-emerald-500/15 bg-emerald-500/10 p-4">
-            <p className="text-sm font-semibold text-[var(--app-text)]">Operations are live</p>
-            <p className="mt-1 text-sm text-muted">Slots, bookings, and customer actions stay visible in one workspace.</p>
-          </div>
-        </div>
-      </aside>
+        <SidebarContent menuItems={menuItems} collapsed={collapsed} />
+      </Drawer>
     </>
   );
 };

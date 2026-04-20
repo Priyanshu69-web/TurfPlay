@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
+import {
+  Alert,
+  Box,
+  MenuItem,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import { CalendarRange, Lock, RefreshCcw, Unlock } from 'lucide-react';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
+import SectionHeader from '../../../components/Dashboard/SectionHeader';
 import Button from '../../../components/Dashboard/Button';
 import Modal from '../../../components/Dashboard/Modal';
-import { useTheme } from '../../../context/ThemeContext';
 import { useGetTurfsQuery } from '../../../redux/api/turfApi';
 import {
   useGetSlotsQuery,
@@ -12,16 +23,14 @@ import {
 import axiosInstance from '../../../utils/axiosInstance';
 import { API_PATHS } from '../../../utils/apiPath';
 import { toast } from 'sonner';
-import { Lock, Unlock, Loader2 } from 'lucide-react';
 
 const ManageSlots = () => {
-  const { isDark } = useTheme();
+  const theme = useTheme();
   const today = new Date().toISOString().split('T')[0];
   const [selectedTurf, setSelectedTurf] = useState('');
   const [selectedDate, setSelectedDate] = useState(today);
   const [blockReason, setBlockReason] = useState('');
   const [showBlockModal, setShowBlockModal] = useState(false);
-  const [blockingDate, setBlockingDate] = useState(null);
 
   const { data: turfsData } = useGetTurfsQuery();
   const turfs = turfsData?.data || [];
@@ -50,14 +59,14 @@ const ManageSlots = () => {
   };
 
   const handleToggleBlock = async (slot) => {
-    const isBlocked = slot.status !== 'blocked';
+    const shouldBlock = slot.status !== 'blocked';
     try {
       await blockSlot({
         id: slot._id,
-        isBlocked,
-        reason: blockReason || (isBlocked ? 'Admin blocked' : null),
+        isBlocked: shouldBlock,
+        reason: blockReason || (shouldBlock ? 'Admin blocked' : null),
       }).unwrap();
-      toast.success(isBlocked ? 'Slot blocked' : 'Slot unblocked');
+      toast.success(shouldBlock ? 'Slot blocked' : 'Slot unblocked');
       refetch();
     } catch (error) {
       toast.error(error?.data?.message || 'Failed to update slot');
@@ -78,7 +87,7 @@ const ManageSlots = () => {
       }).unwrap();
       toast.success('All slots for this date are blocked');
       setShowBlockModal(false);
-      setBlockingDate(null);
+      setBlockReason('');
       refetch();
     } catch (error) {
       toast.error(error?.data?.message || 'Failed to block date');
@@ -100,215 +109,237 @@ const ManageSlots = () => {
     }
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'available':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'booked':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'blocked':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const stats = {
     total: slots.length,
-    available: slots.filter((s) => s.status === 'available').length,
-    booked: slots.filter((s) => s.status === 'booked').length,
-    blocked: slots.filter((s) => s.status === 'blocked').length,
+    available: slots.filter((slot) => slot.status === 'available').length,
+    booked: slots.filter((slot) => slot.status === 'booked').length,
+    blocked: slots.filter((slot) => slot.status === 'blocked').length,
+  };
+
+  const statusStyles = {
+    available: { color: theme.palette.success.main, bg: alpha(theme.palette.success.main, 0.08) },
+    booked: { color: theme.palette.info.main, bg: alpha(theme.palette.info.main, 0.08) },
+    blocked: { color: theme.palette.text.secondary, bg: alpha(theme.palette.text.primary, 0.06) },
   };
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'grid', gap: 3 }}>
       <DashboardHeader
-        title="Manage Slots"
-        subtitle="View, block, or unblock time slots by turf and date"
+        title="Manage slots"
+        subtitle="Filter by turf and date, then block or unblock slots without wasting screen space."
       />
 
-      {/* Filters */}
-      <div
-        className={`rounded-lg shadow-md p-6 ${
-          isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
-        }`}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              Select Turf
-            </label>
-            <select
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <SectionHeader
+          title="Filters and controls"
+          description="Compact filters stay in one row on desktop and stack cleanly on smaller screens."
+          actions={
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+              <Button variant="success" onClick={handleGenerateSlots} startIcon={<RefreshCcw size={16} />}>
+                Generate 7 days
+              </Button>
+              <Button variant="secondary" onClick={() => setShowBlockModal(true)} disabled={!selectedTurf || !selectedDate}>
+                Block day
+              </Button>
+              <Button variant="secondary" onClick={handleUnblockFullDay} disabled={!selectedTurf || !selectedDate}>
+                Unblock day
+              </Button>
+            </Stack>
+          }
+        />
+
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1.2fr) minmax(0, 0.9fr)' },
+          }}
+        >
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <TextField
+              select
+              label="Turf"
               value={selectedTurf}
               onChange={(e) => setSelectedTurf(e.target.value)}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'
-              }`}
+              size="small"
+              fullWidth
             >
-              <option value="">Choose turf...</option>
-              {turfs.map((t) => (
-                <option key={t._id} value={t._id}>
-                  {t.name} - {t.location}
-                </option>
+              <MenuItem value="">Choose turf…</MenuItem>
+              {turfs.map((turf) => (
+                <MenuItem key={turf._id} value={turf._id}>
+                  {turf.name} - {turf.location}
+                </MenuItem>
               ))}
-            </select>
-          </div>
-          <div>
-            <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-              Select Date
-            </label>
-            <input
+            </TextField>
+
+            <TextField
+              label="Date"
               type="date"
+              size="small"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              min={today}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-gray-900'
-              }`}
+              fullWidth
+              inputProps={{ min: today }}
+              InputLabelProps={{ shrink: true }}
             />
-          </div>
-          <div className="flex items-end gap-2">
-            <Button
-              onClick={handleGenerateSlots}
-              variant="success"
-              className="flex items-center gap-2"
-            >
-              Generate 7 Days
-            </Button>
-          </div>
-          <div className="flex items-end gap-2">
-            <Button
-              onClick={() => {
-                setBlockingDate(selectedDate);
-                setShowBlockModal(true);
-              }}
-              variant="secondary"
-              disabled={!selectedTurf || !selectedDate}
-            >
-              Block Full Day
-            </Button>
-            <Button
-              onClick={handleUnblockFullDay}
-              variant="secondary"
-              disabled={!selectedTurf || !selectedDate}
-            >
-              Unblock Day
-            </Button>
-          </div>
-        </div>
+          </Stack>
 
-        {/* Stats */}
-        <div className="flex flex-wrap gap-4 text-sm">
-          <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
-            Total: <strong>{stats.total}</strong>
-          </span>
-          <span className="text-green-600">Available: {stats.available}</span>
-          <span className="text-blue-600">Booked: {stats.booked}</span>
-          <span className="text-gray-600">Blocked: {stats.blocked}</span>
-        </div>
-      </div>
-
-      {/* Slots Grid */}
-      <div
-        className={`rounded-lg shadow-md p-6 ${
-          isDark ? 'bg-gray-900 border border-gray-800' : 'bg-white border border-gray-200'
-        }`}
-      >
-        {!selectedTurf ? (
-          <p className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            Select a turf and date to view slots
-          </p>
-        ) : isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-10 h-10 animate-spin text-green-500" />
-          </div>
-        ) : slots.length === 0 ? (
-          <p className={`text-center py-12 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-            No slots found. Try generating slots for the selected turf.
-          </p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {slots.map((slot) => (
-              <div
-                key={slot._id}
-                className={`p-4 rounded-lg border ${
-                  isDark ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'
-                }`}
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1.5,
+              gridTemplateColumns: { xs: 'repeat(2, minmax(0, 1fr))', md: 'repeat(4, minmax(0, 1fr))' },
+            }}
+          >
+            {[
+              { label: 'Total', value: stats.total },
+              { label: 'Available', value: stats.available, tone: 'success.main' },
+              { label: 'Booked', value: stats.booked, tone: 'info.main' },
+              { label: 'Blocked', value: stats.blocked, tone: 'text.secondary' },
+            ].map((item) => (
+              <Box
+                key={item.label}
+                sx={{
+                  p: 2,
+                  borderRadius: 2.5,
+                  border: `1px solid ${theme.palette.divider}`,
+                  minWidth: 0,
+                }}
               >
-                <div className="font-semibold text-lg mb-1">
-                  {slot.startTime} - {slot.endTime}
-                </div>
-                <span
-                  className={`inline-block px-2 py-1 rounded text-xs font-medium mb-3 ${getStatusColor(
-                    slot.status
-                  )}`}
-                >
-                  {slot.status}
-                </span>
-                {slot.status !== 'booked' && (
-                  <button
-                    onClick={() => handleToggleBlock(slot)}
-                    disabled={isBlocking}
-                    className={`flex items-center gap-1 w-full justify-center py-1.5 rounded text-sm font-medium transition-colors ${
-                      slot.status === 'blocked'
-                        ? 'bg-green-600 text-white hover:bg-green-700'
-                        : 'bg-gray-600 text-white hover:bg-gray-700'
-                    }`}
-                  >
-                    {slot.status === 'blocked' ? (
-                      <>
-                        <Unlock size={14} />
-                        Unblock
-                      </>
-                    ) : (
-                      <>
-                        <Lock size={14} />
-                        Block
-                      </>
-                    )}
-                  </button>
-                )}
-              </div>
+                <Typography variant="body2" color="text.secondary">
+                  {item.label}
+                </Typography>
+                <Typography variant="h2" sx={{ mt: 1, color: item.tone || 'text.primary' }}>
+                  {item.value}
+                </Typography>
+              </Box>
             ))}
-          </div>
-        )}
-      </div>
+          </Box>
+        </Box>
+      </Paper>
 
-      {/* Block Full Day Modal */}
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <SectionHeader
+          title="Slot matrix"
+          description="Compact operational grid for same-day blocking decisions."
+        />
+
+        {!selectedTurf ? (
+          <Alert severity="info">Select a turf and date to view slot availability.</Alert>
+        ) : isLoading ? (
+          <Typography variant="body1" color="text.secondary">
+            Loading slots…
+          </Typography>
+        ) : slots.length === 0 ? (
+          <Alert severity="warning">No slots found. Generate the next 7 days for this turf.</Alert>
+        ) : (
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 1.5,
+              gridTemplateColumns: {
+                xs: 'repeat(2, minmax(0, 1fr))',
+                md: 'repeat(4, minmax(0, 1fr))',
+                xl: 'repeat(6, minmax(0, 1fr))',
+              },
+            }}
+          >
+            {slots.map((slot) => {
+              const statusStyle = statusStyles[slot.status] || statusStyles.blocked;
+
+              return (
+                <Box
+                  key={slot._id}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    border: `1px solid ${theme.palette.divider}`,
+                    display: 'grid',
+                    gap: 1.5,
+                    minWidth: 0,
+                  }}
+                >
+                  <Box>
+                    <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                      {slot.startTime}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      to {slot.endTime}
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      width: 'fit-content',
+                      px: 1.25,
+                      py: 0.5,
+                      borderRadius: 999,
+                      bgcolor: statusStyle.bg,
+                      color: statusStyle.color,
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 600, textTransform: 'capitalize' }}>
+                      {slot.status}
+                    </Typography>
+                  </Box>
+
+                  {slot.status !== 'booked' ? (
+                    <Button
+                      variant={slot.status === 'blocked' ? 'success' : 'secondary'}
+                      onClick={() => handleToggleBlock(slot)}
+                      disabled={isBlocking}
+                      startIcon={slot.status === 'blocked' ? <Unlock size={16} /> : <Lock size={16} />}
+                      fullWidth
+                    >
+                      {slot.status === 'blocked' ? 'Unblock' : 'Block'}
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" disabled fullWidth startIcon={<CalendarRange size={16} />}>
+                      Booked
+                    </Button>
+                  )}
+                </Box>
+              );
+            })}
+          </Box>
+        )}
+      </Paper>
+
       <Modal
         isOpen={showBlockModal}
-        title="Block Full Day"
+        title="Block full day"
         onClose={() => {
           setShowBlockModal(false);
           setBlockReason('');
         }}
+        actions={
+          <Stack direction="row" spacing={1}>
+            <Button variant="secondary" onClick={() => setShowBlockModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleBlockFullDay} disabled={isBlockingDate}>
+              {isBlockingDate ? 'Blocking…' : 'Confirm block'}
+            </Button>
+          </Stack>
+        }
       >
-        <p className={`mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-          Block all slots for {blockingDate || selectedDate}?
-        </p>
-        <input
-          type="text"
-          placeholder="Reason (optional)"
-          value={blockReason}
-          onChange={(e) => setBlockReason(e.target.value)}
-          className={`w-full px-4 py-2 rounded-lg border mb-4 ${
-            isDark ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300'
-          }`}
-        />
-        <div className="flex gap-2 justify-end">
-          <Button variant="secondary" onClick={() => setShowBlockModal(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleBlockFullDay}
-            disabled={isBlockingDate}
-          >
-            {isBlockingDate ? 'Blocking...' : 'Confirm Block'}
-          </Button>
-        </div>
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          <Typography variant="body1">
+            Block all slots for <strong>{selectedDate}</strong>?
+          </Typography>
+          <TextField
+            label="Reason"
+            value={blockReason}
+            onChange={(e) => setBlockReason(e.target.value)}
+            size="small"
+            fullWidth
+            placeholder="Optional reason shown to admins"
+          />
+        </Stack>
       </Modal>
-    </div>
+    </Box>
   );
 };
 

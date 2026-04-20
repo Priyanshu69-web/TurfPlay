@@ -1,15 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, Users, Grid3x3, BookOpen } from 'lucide-react';
-import StatCard from '../../../components/Dashboard/StatCard';
+import { BarChart3, BookOpen, Grid3x3, MessageSquare, Plus, Users } from 'lucide-react';
+import { Box, Paper, Typography } from '@mui/material';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
-import Card from '../../../components/Dashboard/Card';
+import StatCard from '../../../components/Dashboard/StatCard';
+import SectionHeader from '../../../components/Dashboard/SectionHeader';
+import ActionGroup from '../../../components/Dashboard/ActionGroup';
+import ActivityList from '../../../components/Dashboard/ActivityList';
 import { useGetStatsQuery } from '../../../redux/api/adminApi';
-import { useTheme } from '../../../context/ThemeContext';
 import { toast } from 'sonner';
 
 const AdminHome = () => {
-  const { isDark } = useTheme();
   const navigate = useNavigate();
   const { data, isLoading, error } = useGetStatsQuery();
   const stats = data?.data || {
@@ -25,76 +26,119 @@ const AdminHome = () => {
     }
   }, [error]);
 
+  const activityItems = [
+    { primary: 'New booking created', secondary: 'Booking created 2 hours ago for evening slot.' },
+    { primary: 'User registered', secondary: 'A new player account joined 5 hours ago.' },
+    { primary: 'Slots generated', secondary: 'Next 7 days of slots were generated yesterday.' },
+    { primary: 'Booking cancelled', secondary: 'One booking was cancelled 1 day ago.' },
+  ];
+
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: 'grid', gap: 3 }}>
       <DashboardHeader
-        title="Dashboard"
-        subtitle="Welcome to the admin dashboard. Manage turfs, bookings, and users."
+        eyebrow="Workspace"
+        title="Overview"
+        subtitle="High-density visibility into venues, bookings, users, and support operations."
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={Grid3x3}
-          label="Total Turfs"
-          value={isLoading ? '...' : stats.totalTurfs}
-          color="blue"
-        />
-        <StatCard
-          icon={BookOpen}
-          label="Total Bookings"
-          value={isLoading ? '...' : stats.totalBookings}
-          color="green"
-        />
-        <StatCard
-          icon={Users}
-          label="Total Users"
-          value={isLoading ? '...' : stats.totalUsers}
-          color="purple"
-        />
-        <StatCard
-          icon={BarChart3}
-          label="Today's Bookings"
-          value={isLoading ? '...' : stats.todayBookings}
-          color="red"
-        />
-      </div>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 2,
+          gridTemplateColumns: {
+            xs: 'repeat(2, minmax(0, 1fr))',
+            lg: 'repeat(4, minmax(0, 1fr))',
+          },
+        }}
+      >
+        <StatCard icon={Grid3x3} label="Total Turfs" value={isLoading ? '...' : stats.totalTurfs} tone="blue" />
+        <StatCard icon={BookOpen} label="Total Bookings" value={isLoading ? '...' : stats.totalBookings} tone="green" />
+        <StatCard icon={Users} label="Total Users" value={isLoading ? '...' : stats.totalUsers} tone="purple" />
+        <StatCard icon={BarChart3} label="Today" value={isLoading ? '...' : stats.todayBookings} tone="red" helper="Bookings created today" />
+      </Box>
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Quick Actions">
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/admin/dashboard/turfs')}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-left font-medium transition-colors"
-            >
-              + Create New Turf
-            </button>
-            <button
-              onClick={() => navigate('/admin/dashboard/slots')}
-              className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-left font-medium transition-colors"
-            >
-              + Generate Slots
-            </button>
-            <button
-              onClick={() => navigate('/admin/dashboard/messages')}
-              className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-left font-medium transition-colors"
-            >
-              View All Messages
-            </button>
-          </div>
-        </Card>
+      <Box
+        sx={{
+          display: 'grid',
+          gap: 3,
+          gridTemplateColumns: {
+            xs: '1fr',
+            xl: 'minmax(0, 1.15fr) minmax(0, 0.85fr)',
+          },
+        }}
+      >
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <SectionHeader
+            title="Quick actions"
+            description="Common admin operations without oversized CTA blocks."
+          />
+          <ActionGroup
+            actions={[
+              {
+                label: 'Create turf',
+                onClick: () => navigate('/admin/dashboard/turfs'),
+                icon: Plus,
+                variant: 'contained',
+              },
+              {
+                label: 'Generate slots',
+                onClick: () => navigate('/admin/dashboard/slots'),
+                icon: Grid3x3,
+                variant: 'outlined',
+              },
+              {
+                label: 'Open messages',
+                onClick: () => navigate('/admin/dashboard/messages'),
+                icon: MessageSquare,
+                variant: 'outlined',
+              },
+            ]}
+          />
 
-        <Card title="Recent Activities">
-          <div className="space-y-3 text-sm">
-            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>• New booking created 2 hours ago</p>
-            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>• User registered 5 hours ago</p>
-            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>• Slot generated yesterday</p>
-            <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>• Booking cancelled 1 day ago</p>
-          </div>
-        </Card>
-      </div>
-    </div>
+          <Box
+            sx={{
+              mt: 3,
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: { xs: '1fr', md: 'repeat(3, minmax(0, 1fr))' },
+            }}
+          >
+            {[
+              { label: 'Occupancy', value: '68%', helper: 'Average slot fill this week' },
+              { label: 'Pending responses', value: '04', helper: 'Messages needing follow-up' },
+              { label: 'Blocked slots', value: '12', helper: 'Operational exceptions today' },
+            ].map((item) => (
+              <Box
+                key={item.label}
+                sx={{
+                  p: 2,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 2.5,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  {item.label}
+                </Typography>
+                <Typography variant="h2" sx={{ mt: 1 }}>
+                  {item.value}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                  {item.helper}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </Paper>
+
+        <Paper variant="outlined" sx={{ p: 3 }}>
+          <SectionHeader
+            title="Recent activity"
+            description="A clean, list-first activity feed instead of a large card block."
+          />
+          <ActivityList items={activityItems} />
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 

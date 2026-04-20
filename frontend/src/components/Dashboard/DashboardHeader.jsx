@@ -1,21 +1,68 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
+import { Box, Stack, Typography } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 
-const DashboardHeader = ({ title, subtitle }) => {
+const DashboardHeader = ({ title, subtitle, eyebrow = 'Overview', actions = null }) => {
+  const theme = useTheme();
+
   return (
-    <div className="surface-card-strong hero-grid relative overflow-hidden p-6 text-[var(--app-text)]">
-      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-transparent to-cyan-500/10" />
-      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-emerald-500">
-            <Sparkles size={14} />
-            Workspace
-          </div>
-          <h1 className="text-3xl font-semibold">{title}</h1>
-          {subtitle ? <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">{subtitle}</p> : null}
-        </div>
-      </div>
-    </div>
+    <Box
+      sx={{
+        px: { xs: 0.5, sm: 0 },
+        pb: 1,
+      }}
+    >
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={2}
+        justifyContent="space-between"
+        alignItems={{ xs: 'flex-start', md: 'flex-end' }}
+      >
+        <Box>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'primary.main',
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            }}
+          >
+            {eyebrow}
+          </Typography>
+          <Typography variant="h1" sx={{ mt: 1 }}>
+            {title}
+          </Typography>
+          {subtitle ? (
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                mt: 1,
+                maxWidth: 760,
+              }}
+            >
+              {subtitle}
+            </Typography>
+          ) : null}
+        </Box>
+
+        {actions ? (
+          <Box
+            sx={{
+              alignSelf: { xs: 'stretch', md: 'auto' },
+              px: 1,
+              py: 0.75,
+              borderRadius: 2.5,
+              border: `1px solid ${theme.palette.divider}`,
+              bgcolor: alpha(theme.palette.background.paper, 0.9),
+            }}
+          >
+            {actions}
+          </Box>
+        ) : null}
+      </Stack>
+    </Box>
   );
 };
 

@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
+import { Box, Paper, Stack, Typography } from '@mui/material';
 import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
+import SectionHeader from '../../../components/Dashboard/SectionHeader';
 import DataTable from '../../../components/Dashboard/DataTable';
 import Modal from '../../../components/Dashboard/Modal';
 import Input from '../../../components/Dashboard/Input';
 import Button from '../../../components/Dashboard/Button';
-import { useTheme } from '../../../context/ThemeContext';
 import {
   useGetTurfsQuery,
   useCreateTurfMutation,
@@ -15,7 +16,6 @@ import {
 import { toast } from 'sonner';
 
 const ManageTurfs = () => {
-  const { isDark } = useTheme();
   const { data, isLoading } = useGetTurfsQuery();
   const turfs = data?.data || [];
   const [showModal, setShowModal] = useState(false);
@@ -87,94 +87,91 @@ const ManageTurfs = () => {
   const columns = [
     { key: 'name', label: 'Name' },
     { key: 'location', label: 'Location' },
-    { key: 'pricePerSlot', label: 'Price/Slot', render: (val) => `₹${val}` },
-    { key: 'description', label: 'Description', render: (val) => val?.substring(0, 30) + '...' || 'N/A' },
+    {
+      key: 'pricePerSlot',
+      label: 'Price / Slot',
+      render: (val) => (
+        <Typography variant="body1" sx={{ fontWeight: 600 }}>
+          ₹{val}
+        </Typography>
+      ),
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      render: (val) => (
+        <Typography variant="body2" color="text.secondary">
+          {val ? `${val.substring(0, 56)}${val.length > 56 ? '…' : ''}` : 'No description'}
+        </Typography>
+      ),
+    },
   ];
 
   return (
-    <div className="space-y-6">
-      <DashboardHeader title="Manage Turfs" subtitle="Create, edit, or delete turfs" />
+    <Box sx={{ display: 'grid', gap: 3 }}>
+      <DashboardHeader
+        title="Manage turfs"
+        subtitle="Create, edit, and maintain venue records in a compact operational table."
+      />
 
-      <div className="flex justify-end mb-4">
-        <Button
-          onClick={() => handleOpenModal()}
-          variant="primary"
-          className="flex items-center gap-2"
-        >
-          <Plus size={18} /> Create Turf
-        </Button>
-      </div>
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <SectionHeader
+          title="Turf inventory"
+          description={`${turfs.length} venue${turfs.length === 1 ? '' : 's'} currently available in the system.`}
+          actions={
+            <Button onClick={() => handleOpenModal()} variant="primary" startIcon={<Plus size={16} />}>
+              Create turf
+            </Button>
+          }
+        />
 
-      <div className={`rounded-lg shadow-md p-6 ${isDark ? 'bg-gray-900' : 'bg-white'}`}>
         <DataTable
           columns={columns}
           data={turfs}
           onEdit={handleOpenModal}
           onDelete={handleDelete}
           loading={isLoading}
+          emptyText="No turfs created yet."
         />
-      </div>
+      </Paper>
 
-      {/* Modal */}
       <Modal
         isOpen={showModal}
-        title={editingTurf ? 'Edit Turf' : 'Create Turf'}
+        title={editingTurf ? 'Edit turf' : 'Create turf'}
         onClose={handleCloseModal}
+        actions={
+          <Stack direction="row" spacing={1}>
+            <Button variant="secondary" onClick={handleCloseModal}>
+              Cancel
+            </Button>
+            <Button variant="primary" type="submit" form="turf-form" disabled={isCreating || isUpdating}>
+              {isCreating || isUpdating ? 'Saving…' : editingTurf ? 'Update turf' : 'Create turf'}
+            </Button>
+          </Stack>
+        }
       >
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <Box component="form" id="turf-form" onSubmit={handleSubmit} sx={{ display: 'grid', gap: 2, pt: 1 }}>
+          <Input label="Turf name" name="name" value={formData.name} onChange={handleInputChange} required />
+          <Input label="Location" name="location" value={formData.location} onChange={handleInputChange} required />
           <Input
-            label="Turf Name"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            placeholder="Enter turf name"
-            required
-          />
-          <Input
-            label="Location"
-            name="location"
-            value={formData.location}
-            onChange={handleInputChange}
-            placeholder="Enter location"
-            required
-          />
-          <Input
-            label="Price per Slot (₹)"
+            label="Price per slot"
             name="pricePerSlot"
             type="number"
             value={formData.pricePerSlot}
             onChange={handleInputChange}
-            placeholder="Enter price"
             required
           />
-          <div>
-            <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              placeholder="Enter description"
-              rows="4"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
-                isDark
-                  ? 'bg-gray-800 border-gray-700 text-white focus:ring-blue-500'
-                  : 'bg-white border-gray-300 text-gray-900 focus:ring-blue-500'
-              }`}
-            />
-          </div>
-          <div className="flex gap-4 justify-end">
-            <Button variant="secondary" onClick={handleCloseModal}>
-              Cancel
-            </Button>
-            <Button variant="primary" type="submit" disabled={isCreating || isUpdating}>
-              {isCreating || isUpdating ? 'Saving...' : editingTurf ? 'Update' : 'Create'}
-            </Button>
-          </div>
-        </form>
+          <Input
+            label="Description"
+            name="description"
+            value={formData.description}
+            onChange={handleInputChange}
+            multiline
+            rows={4}
+          />
+        </Box>
       </Modal>
-    </div>
+    </Box>
   );
 };
 

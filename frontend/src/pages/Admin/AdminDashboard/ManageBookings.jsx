@@ -1,208 +1,221 @@
-import React, { useState } from "react";
-import DashboardHeader from "../../../components/Dashboard/DashboardHeader";
-import StatusBadge from "../../../components/Dashboard/StatusBadge";
-import { useGetBookingsQuery, useCancelBookingMutation } from "../../../redux/api/adminApi";
-import toast from "react-hot-toast";
+import React, { useState } from 'react';
+import {
+  Box,
+  MenuItem,
+  Pagination,
+  Paper,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import DashboardHeader from '../../../components/Dashboard/DashboardHeader';
+import SectionHeader from '../../../components/Dashboard/SectionHeader';
+import DataTable from '../../../components/Dashboard/DataTable';
+import StatusBadge from '../../../components/Dashboard/StatusBadge';
+import Modal from '../../../components/Dashboard/Modal';
+import Button from '../../../components/Dashboard/Button';
+import { useGetBookingsQuery, useCancelBookingMutation } from '../../../redux/api/adminApi';
+import toast from 'react-hot-toast';
 
 const ManageBookings = () => {
   const [filters, setFilters] = useState({
     page: 1,
     limit: 10,
-    status: "",
-    date: "",
+    status: '',
+    date: '',
   });
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [cancelReason, setCancelReason] = useState('');
 
   const { data: bookingsData, isLoading, refetch } = useGetBookingsQuery(filters);
   const [cancelBooking, { isLoading: isCancelling }] = useCancelBookingMutation();
-  const [selectedBooking, setSelectedBooking] = useState(null);
-  const [cancelReason, setCancelReason] = useState("");
 
   const handleCancelBooking = async () => {
     try {
       await cancelBooking({ id: selectedBooking._id, reason: cancelReason }).unwrap();
-      toast.success("Booking cancelled successfully");
+      toast.success('Booking cancelled successfully');
       setSelectedBooking(null);
-      setCancelReason("");
+      setCancelReason('');
       refetch();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to cancel booking");
+      toast.error(error?.data?.message || 'Failed to cancel booking');
     }
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters({ ...filters, [key]: value, page: 1 });
+    setFilters((prev) => ({ ...prev, [key]: value, page: key === 'page' ? value : 1 }));
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <span className="loading loading-spinner loading-lg"></span>
-      </div>
-    );
-  }
-
   const bookings = bookingsData?.data || [];
-  const total = bookingsData?.total || 0;
   const pages = bookingsData?.pages || 1;
 
+  const columns = [
+    {
+      key: 'customer',
+      label: 'Customer',
+      render: (_, booking) => (
+        <Box>
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            {booking.userId?.name || 'N/A'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {booking.userId?.email || 'N/A'}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      key: 'turf',
+      label: 'Turf',
+      render: (_, booking) => (
+        <Box>
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            {booking.turfId?.name || 'N/A'}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {booking.turfId?.location || 'N/A'}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      key: 'schedule',
+      label: 'Date & Time',
+      render: (_, booking) => (
+        <Box>
+          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+            {new Date(booking.date).toLocaleDateString()}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {booking.startTime} - {booking.endTime}
+          </Typography>
+        </Box>
+      ),
+    },
+    {
+      key: 'amount',
+      label: 'Amount',
+      render: (amount) => (
+        <Typography variant="body1" sx={{ fontWeight: 700 }}>
+          ₹{amount}
+        </Typography>
+      ),
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (status) => <StatusBadge status={status} size="sm" />,
+    },
+    {
+      key: 'action',
+      label: '',
+      render: (_, booking) => (
+        booking.status !== 'cancelled' ? (
+          <Button variant="danger" size="sm" onClick={() => setSelectedBooking(booking)}>
+            Cancel
+          </Button>
+        ) : null
+      ),
+    },
+  ];
+
   return (
-    <div className="space-y-6">
-      <DashboardHeader title="Manage Bookings" subtitle="View and manage all bookings" />
+    <Box sx={{ display: 'grid', gap: 3 }}>
+      <DashboardHeader
+        title="Manage bookings"
+        subtitle="Review booking flow, filter by status or date, and cancel exceptions with a compact table."
+      />
 
-      {/* Filters */}
-      <div className="card bg-base-200 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title text-lg mb-4">Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input
-              type="date"
-              value={filters.date}
-              onChange={(e) => handleFilterChange("date", e.target.value)}
-              className="input input-bordered"
-              placeholder="Date"
-            />
-            <select
-              value={filters.status}
-              onChange={(e) => handleFilterChange("status", e.target.value)}
-              className="select select-bordered"
-            >
-              <option value="">All Status</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="pending">Pending</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            <input
-              type="number"
-              value={filters.limit}
-              onChange={(e) => handleFilterChange("limit", parseInt(e.target.value))}
-              className="input input-bordered"
-              placeholder="Items per page"
-            />
-            <button
-              onClick={() => setFilters({ page: 1, limit: 10, status: "", date: "" })}
-              className="btn btn-ghost"
-            >
-              Reset Filters
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Bookings Table */}
-      <div className="card bg-base-200 shadow-xl overflow-x-auto">
-        <table className="table w-full">
-          <thead className="bg-base-300">
-            <tr>
-              <th>Customer</th>
-              <th>Turf</th>
-              <th>Date & Time</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bookings.length === 0 ? (
-              <tr>
-                <td colSpan="6" className="text-center py-4">
-                  No bookings found
-                </td>
-              </tr>
-            ) : (
-              bookings.map((booking) => (
-                <tr key={booking._id} className="hover:bg-base-300">
-                  <td>
-                    <div>
-                      <p className="font-bold">{booking.userId?.name || "N/A"}</p>
-                      <p className="text-sm opacity-75">{booking.userId?.email || "N/A"}</p>
-                    </div>
-                  </td>
-                  <td>
-                    <p className="font-semibold">{booking.turfId?.name || "N/A"}</p>
-                    <p className="text-sm opacity-75">{booking.turfId?.location || "N/A"}</p>
-                  </td>
-                  <td>
-                    <p className="font-semibold">{new Date(booking.date).toLocaleDateString()}</p>
-                    <p className="text-sm">{booking.startTime} - {booking.endTime}</p>
-                  </td>
-                  <td className="font-bold">₹{booking.amount}</td>
-                  <td>
-                    <StatusBadge status={booking.status} size="sm" />
-                  </td>
-                  <td>
-                    {booking.status !== "cancelled" && (
-                      <button
-                        onClick={() => setSelectedBooking(booking)}
-                        className="btn btn-sm btn-error"
-                      >
-                        Cancel
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-center gap-2">
-        <button
-          onClick={() => handleFilterChange("page", Math.max(1, filters.page - 1))}
-          disabled={filters.page === 1}
-          className="btn btn-sm"
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <SectionHeader title="Filters" description="Use narrow controls that scale cleanly from mobile to wide screens." />
+        <Box
+          sx={{
+            display: 'grid',
+            gap: 2,
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(4, minmax(0, 1fr))' },
+          }}
         >
-          Previous
-        </button>
-        <span className="flex items-center px-4">
-          Page {filters.page} of {pages}
-        </span>
-        <button
-          onClick={() => handleFilterChange("page", Math.min(pages, filters.page + 1))}
-          disabled={filters.page === pages}
-          className="btn btn-sm"
-        >
-          Next
-        </button>
-      </div>
+          <TextField
+            label="Date"
+            type="date"
+            size="small"
+            value={filters.date}
+            onChange={(e) => handleFilterChange('date', e.target.value)}
+            InputLabelProps={{ shrink: true }}
+          />
+          <TextField
+            select
+            label="Status"
+            size="small"
+            value={filters.status}
+            onChange={(e) => handleFilterChange('status', e.target.value)}
+          >
+            <MenuItem value="">All status</MenuItem>
+            <MenuItem value="confirmed">Confirmed</MenuItem>
+            <MenuItem value="pending">Pending</MenuItem>
+            <MenuItem value="cancelled">Cancelled</MenuItem>
+          </TextField>
+          <TextField
+            label="Rows per page"
+            type="number"
+            size="small"
+            value={filters.limit}
+            onChange={(e) => handleFilterChange('limit', Number(e.target.value) || 10)}
+          />
+          <Button
+            variant="secondary"
+            onClick={() => setFilters({ page: 1, limit: 10, status: '', date: '' })}
+          >
+            Reset filters
+          </Button>
+        </Box>
+      </Paper>
 
-      {/* Cancel Booking Modal */}
-      {selectedBooking && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="card bg-base-100 shadow-2xl max-w-md w-full mx-4">
-            <div className="card-body">
-              <h2 className="card-title">Cancel Booking</h2>
-              <p className="text-sm opacity-75 mb-4">
-                Booking ID: {selectedBooking._id.slice(0, 8)}...
-              </p>
-              <textarea
-                placeholder="Cancellation reason (optional)"
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                className="textarea textarea-bordered w-full"
-                rows="3"
-              />
-              <div className="card-actions justify-end mt-6">
-                <button
-                  onClick={() => setSelectedBooking(null)}
-                  className="btn btn-ghost"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleCancelBooking}
-                  disabled={isCancelling}
-                  className="btn btn-error"
-                >
-                  {isCancelling ? "Cancelling..." : "Confirm Cancel"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <SectionHeader title="Bookings" description="Dense operational table with scroll support on smaller screens." />
+        <DataTable columns={columns} data={bookings} loading={isLoading} emptyText="No bookings found." />
+        <Stack direction="row" justifyContent="center" sx={{ mt: 2.5 }}>
+          <Pagination
+            count={pages}
+            page={filters.page}
+            onChange={(_, page) => handleFilterChange('page', page)}
+            color="primary"
+            size="small"
+          />
+        </Stack>
+      </Paper>
+
+      <Modal
+        isOpen={Boolean(selectedBooking)}
+        title="Cancel booking"
+        onClose={() => setSelectedBooking(null)}
+        actions={
+          <Stack direction="row" spacing={1}>
+            <Button variant="secondary" onClick={() => setSelectedBooking(null)}>
+              Back
+            </Button>
+            <Button variant="danger" onClick={handleCancelBooking} disabled={isCancelling}>
+              {isCancelling ? 'Cancelling…' : 'Confirm cancel'}
+            </Button>
+          </Stack>
+        }
+      >
+        <Stack spacing={2} sx={{ pt: 1 }}>
+          <Typography variant="body2" color="text.secondary">
+            Booking ID: {selectedBooking?._id?.slice(0, 8)}…
+          </Typography>
+          <TextField
+            multiline
+            rows={3}
+            label="Cancellation reason"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+            size="small"
+            fullWidth
+          />
+        </Stack>
+      </Modal>
+    </Box>
   );
 };
 
