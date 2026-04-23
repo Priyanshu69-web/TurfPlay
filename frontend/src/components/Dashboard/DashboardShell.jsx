@@ -65,7 +65,7 @@ const DashboardFrame = ({ title, subtitle, menuItems, onLogout, children }) => {
             <Toolbar
               sx={{
                 minHeight: '64px !important',
-                px: { xs: 2, sm: 3, lg: 4 },
+                px: { xs: 2, sm: 3, lg: 2 },
                 gap: 2,
               }}
             >
@@ -134,8 +134,8 @@ const DashboardFrame = ({ title, subtitle, menuItems, onLogout, children }) => {
             </Toolbar>
           </AppBar>
 
-          <Box sx={{ px: { xs: 2, sm: 3, lg: 4 }, py: { xs: 2, sm: 3 }, minWidth: 0 }}>
-            <Box sx={{ mx: 'auto', width: '100%', maxWidth: 1440 }}>{children}</Box>
+          <Box sx={{ px: { xs: 2, sm: 3, lg: 2 }, py: { xs: 2, sm: 3 }, minWidth: 0 }}>
+            <Box sx={{ width: '100%', maxWidth: 1440 }}>{children}</Box>
           </Box>
         </Box>
       </Box>

@@ -17,7 +17,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:3001", "http://localhost:3002"],
     credentials: true,
   })
 );
@@ -38,6 +38,34 @@ app.get("/api/v1/health", (req, res) => {
     success: true,
     message: "Server is running",
   });
+});
+
+// Temporary seed route for testing
+app.get("/api/v1/seed-admin", async (req, res) => {
+  try {
+    const email = "admin@gmail.com";
+    const UserModel = (await import("./models/userModel.js")).default;
+    const bcrypt = (await import("bcryptjs")).default;
+    
+    const existing = await UserModel.findOne({ email });
+    if (existing) {
+      existing.role = 1;
+      await existing.save();
+      return res.status(200).json({ message: "Admin updated" });
+    }
+    
+    const hashedPassword = await bcrypt.hash("admin123", 10);
+    const admin = new UserModel({
+      name: "Admin",
+      email: email,
+      password: hashedPassword,
+      role: 1
+    });
+    await admin.save();
+    res.status(201).json({ message: "Admin created: admin123" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Root route

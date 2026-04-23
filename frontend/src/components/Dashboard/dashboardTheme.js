@@ -1,6 +1,6 @@
 import { alpha, createTheme } from '@mui/material/styles';
 
-export const DASHBOARD_DRAWER_WIDTH = 248;
+export const DASHBOARD_DRAWER_WIDTH = 180;
 export const DASHBOARD_DRAWER_COLLAPSED = 84;
 
 export const getDashboardTheme = (mode = 'light') => {
