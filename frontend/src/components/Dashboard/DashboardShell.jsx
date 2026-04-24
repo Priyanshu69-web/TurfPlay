@@ -13,7 +13,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { alpha, useTheme as useMuiTheme } from '@mui/material/styles';
-import { Bell, LogOut, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Bell, LogOut, Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import ThemeToggle from '../ui/ThemeToggle';
 import { useTheme } from '../../context/ThemeContext';
@@ -23,7 +23,7 @@ import {
   getDashboardTheme,
 } from './dashboardTheme';
 
-const DashboardFrame = ({ title, subtitle, menuItems, onLogout, children }) => {
+const DashboardFrame = ({ title, menuItems, onLogout, children }) => {
   const theme = useMuiTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const [desktopCollapsed, setDesktopCollapsed] = React.useState(false);
@@ -48,69 +48,65 @@ const DashboardFrame = ({ title, subtitle, menuItems, onLogout, children }) => {
           sx={{
             flex: 1,
             minWidth: 0,
-            ml: { lg: `${sidebarWidth}px` },
             transition: theme.transitions.create('margin-left', {
               duration: theme.transitions.duration.shorter,
             }),
           }}
         >
+          {/* Topbar */}
           <AppBar
             position="sticky"
             color="transparent"
             sx={{
-              backdropFilter: 'blur(14px)',
-              bgcolor: alpha(theme.palette.background.paper, 0.9),
+              backdropFilter: 'blur(12px)',
+              bgcolor: alpha(theme.palette.background.paper, 0.92),
             }}
           >
             <Toolbar
               sx={{
-                minHeight: '64px !important',
-                px: { xs: 2, sm: 3, lg: 2 },
-                gap: 2,
+                minHeight: '48px !important',
+                px: { xs: 1, sm: 1.5 },
+                gap: 0.5,
               }}
             >
               <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0, flex: 1 }}>
-                <IconButton
-                  onClick={() => (isDesktop ? setDesktopCollapsed((prev) => !prev) : setMobileOpen(true))}
-                  size="small"
-                  sx={{
-                    border: `1px solid ${theme.palette.divider}`,
-                    bgcolor: 'background.paper',
-                  }}
-                >
-                  {isDesktop ? (
-                    desktopCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />
-                  ) : (
-                    <PanelLeftOpen size={18} />
-                  )}
-                </IconButton>
+                <Tooltip title={isDesktop ? (desktopCollapsed ? 'Expand sidebar' : 'Collapse sidebar') : 'Open menu'}>
+                  <IconButton
+                    onClick={() =>
+                      isDesktop
+                        ? setDesktopCollapsed((prev) => !prev)
+                        : setMobileOpen(true)
+                    }
+                    size="small"
+                    sx={{
+                      color: 'text.secondary',
+                      '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.06) },
+                    }}
+                  >
+                    <Menu size={16} />
+                  </IconButton>
+                </Tooltip>
 
-                <Box sx={{ minWidth: 0 }}>
-                  <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-                    TurfPlay workspace
-                  </Typography>
-                  <Typography variant="h1" noWrap>
-                    {title}
-                  </Typography>
-                  {subtitle ? (
-                    <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, display: { xs: 'none', md: 'block' } }}>
-                      {subtitle}
-                    </Typography>
-                  ) : null}
-                </Box>
+                <Typography
+                  variant="body1"
+                  sx={{ fontWeight: 600, fontSize: 13, color: 'text.primary' }}
+                  noWrap
+                >
+                  {title}
+                </Typography>
               </Stack>
 
-              <Stack direction="row" spacing={1} alignItems="center">
+              <Stack direction="row" spacing={0.5} alignItems="center">
                 <Tooltip title="Notifications">
                   <IconButton
                     size="small"
                     sx={{
-                      border: `1px solid ${theme.palette.divider}`,
-                      bgcolor: 'background.paper',
+                      color: 'text.secondary',
+                      '&:hover': { bgcolor: alpha(theme.palette.text.primary, 0.06) },
                     }}
                   >
                     <Badge color="primary" variant="dot">
-                      <Bell size={18} />
+                      <Bell size={15} />
                     </Badge>
                   </IconButton>
                 </Tooltip>
@@ -122,20 +118,23 @@ const DashboardFrame = ({ title, subtitle, menuItems, onLogout, children }) => {
                     onClick={onLogout}
                     size="small"
                     sx={{
-                      border: `1px solid ${alpha(theme.palette.error.main, 0.24)}`,
-                      bgcolor: alpha(theme.palette.error.main, 0.08),
-                      color: 'error.main',
+                      color: 'text.secondary',
+                      '&:hover': {
+                        bgcolor: alpha(theme.palette.error.main, 0.08),
+                        color: 'error.main',
+                      },
                     }}
                   >
-                    <LogOut size={18} />
+                    <LogOut size={15} />
                   </IconButton>
                 </Tooltip>
               </Stack>
             </Toolbar>
           </AppBar>
 
-          <Box sx={{ px: { xs: 2, sm: 3, lg: 2 }, py: { xs: 2, sm: 3 }, minWidth: 0 }}>
-            <Box sx={{ width: '100%', maxWidth: 1440 }}>{children}</Box>
+          {/* Page Content */}
+          <Box sx={{ px: { xs: 1.5, sm: 2 }, py: { xs: 2, sm: 3 }, minWidth: 0, width: '100%' }}>
+            {children}
           </Box>
         </Box>
       </Box>
@@ -143,14 +142,17 @@ const DashboardFrame = ({ title, subtitle, menuItems, onLogout, children }) => {
   );
 };
 
-const DashboardShell = ({ title, subtitle, menuItems, onLogout, children }) => {
+const DashboardShell = ({ title, menuItems, onLogout, children }) => {
   const { isDark } = useTheme();
-  const dashboardTheme = React.useMemo(() => getDashboardTheme(isDark ? 'dark' : 'light'), [isDark]);
+  const dashboardTheme = React.useMemo(
+    () => getDashboardTheme(isDark ? 'dark' : 'light'),
+    [isDark]
+  );
 
   return (
     <ThemeProvider theme={dashboardTheme}>
       <CssBaseline />
-      <DashboardFrame title={title} subtitle={subtitle} menuItems={menuItems} onLogout={onLogout}>
+      <DashboardFrame title={title} menuItems={menuItems} onLogout={onLogout}>
         {children}
       </DashboardFrame>
     </ThemeProvider>

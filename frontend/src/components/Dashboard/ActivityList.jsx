@@ -1,11 +1,11 @@
 import React from 'react';
-import { Avatar, Divider, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
+import { Box, Divider, Typography } from '@mui/material';
 import { Activity } from 'lucide-react';
 
+/**
+ * GitHub-style activity list — minimal padding, subtle separators.
+ */
 const ActivityList = ({ items, emptyText = 'No recent activity yet.' }) => {
-  const theme = useTheme();
-
   if (!items?.length) {
     return (
       <Typography variant="body2" color="text.secondary">
@@ -15,39 +15,49 @@ const ActivityList = ({ items, emptyText = 'No recent activity yet.' }) => {
   }
 
   return (
-    <List disablePadding>
+    <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
       {items.map((item, index) => (
         <React.Fragment key={`${item.primary}-${index}`}>
-          <ListItem disableGutters sx={{ py: 1.5, alignItems: 'flex-start' }}>
-            <ListItemAvatar sx={{ minWidth: 40 }}>
-              <Avatar
-                sx={{
-                  width: 28,
-                  height: 28,
-                  bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.16 : 0.1),
-                  color: 'primary.main',
-                }}
-              >
-                {item.icon ? <item.icon size={14} /> : <Activity size={14} />}
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              primary={
-                <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                  {item.primary}
-                </Typography>
-              }
-              secondary={
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                  {item.secondary}
-                </Typography>
-              }
-            />
-          </ListItem>
-          {index < items.length - 1 ? <Divider component="li" /> : null}
+          <Box
+            component="li"
+            sx={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 2,
+              py: 1.5,
+            }}
+          >
+            {/* Icon dot */}
+            <Box
+              sx={{
+                mt: 0.25,
+                width: 24,
+                height: 24,
+                borderRadius: '50%',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                display: 'grid',
+                placeItems: 'center',
+                color: 'primary.main',
+                flexShrink: 0,
+              }}
+            >
+              {item.icon ? <item.icon size={12} /> : <Activity size={12} />}
+            </Box>
+
+            {/* Text */}
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="body1" sx={{ fontWeight: 500 }} noWrap>
+                {item.primary}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+                {item.secondary}
+              </Typography>
+            </Box>
+          </Box>
+          {index < items.length - 1 && <Divider component="li" />}
         </React.Fragment>
       ))}
-    </List>
+    </Box>
   );
 };
 

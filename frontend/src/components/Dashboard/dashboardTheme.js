@@ -1,7 +1,7 @@
 import { alpha, createTheme } from '@mui/material/styles';
 
-export const DASHBOARD_DRAWER_WIDTH = 180;
-export const DASHBOARD_DRAWER_COLLAPSED = 84;
+export const DASHBOARD_DRAWER_WIDTH = 160;
+export const DASHBOARD_DRAWER_COLLAPSED = 52;
 
 export const getDashboardTheme = (mode = 'light') => {
   const isDark = mode === 'dark';
@@ -18,10 +18,10 @@ export const getDashboardTheme = (mode = 'light') => {
       main: '#0f172a',
     },
     success: {
-      main: '#15803d',
+      main: '#16a34a',
     },
     warning: {
-      main: '#b45309',
+      main: '#d97706',
     },
     error: {
       main: '#dc2626',
@@ -30,55 +30,32 @@ export const getDashboardTheme = (mode = 'light') => {
       main: '#2563eb',
     },
     background: {
-      default: isDark ? '#0b1220' : '#f6f8fb',
-      paper: isDark ? '#111827' : '#ffffff',
+      default: isDark ? '#0d1117' : '#f5f5f5',
+      paper:   isDark ? '#161b22' : '#ffffff',
     },
     text: {
-      primary: isDark ? '#f8fafc' : '#111827',
-      secondary: isDark ? '#94a3b8' : '#5b6b80',
+      primary:   isDark ? '#e6edf3' : '#0d1117',
+      secondary: isDark ? '#8b949e' : '#57606a',
     },
-    divider: isDark ? 'rgba(148, 163, 184, 0.12)' : 'rgba(15, 23, 42, 0.08)',
+    divider: isDark ? 'rgba(240,246,252,0.1)' : 'rgba(31,35,40,0.12)',
   };
 
   return createTheme({
     spacing: 4,
     palette,
-    shape: {
-      borderRadius: 12,
-    },
+    shape: { borderRadius: 8 },
     typography: {
-      fontFamily: 'Inter, "Segoe UI", sans-serif',
-      h1: {
-        fontSize: 24,
-        fontWeight: 700,
-        lineHeight: 1.2,
-        letterSpacing: '-0.02em',
-      },
-      h2: {
-        fontSize: 18,
-        fontWeight: 600,
-        lineHeight: 1.3,
-      },
-      body1: {
-        fontSize: 14,
-        lineHeight: 1.5,
-      },
-      body2: {
-        fontSize: 12,
-        lineHeight: 1.4,
-      },
-      button: {
-        fontSize: 14,
-        fontWeight: 600,
-        textTransform: 'none',
-      },
+      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+      h1: { fontSize: 20, fontWeight: 600, lineHeight: 1.25, letterSpacing: '-0.015em' },
+      h2: { fontSize: 14, fontWeight: 600, lineHeight: 1.4 },
+      body1: { fontSize: 13, lineHeight: 1.5 },
+      body2: { fontSize: 12, lineHeight: 1.4 },
+      button: { fontSize: 13, fontWeight: 500, textTransform: 'none', letterSpacing: 0 },
     },
     components: {
       MuiCssBaseline: {
         styleOverrides: {
-          body: {
-            backgroundColor: palette.background.default,
-          },
+          body: { backgroundColor: palette.background.default },
         },
       },
       MuiAppBar: {
@@ -92,12 +69,8 @@ export const getDashboardTheme = (mode = 'light') => {
       },
       MuiPaper: {
         styleOverrides: {
-          root: {
-            backgroundImage: 'none',
-          },
-          rounded: {
-            borderRadius: 12,
-          },
+          root: { backgroundImage: 'none' },
+          rounded: { borderRadius: 8 },
         },
       },
       MuiDrawer: {
@@ -109,97 +82,75 @@ export const getDashboardTheme = (mode = 'light') => {
         },
       },
       MuiButton: {
-        defaultProps: {
-          disableElevation: true,
-          size: 'small',
-        },
+        defaultProps: { disableElevation: true, size: 'small' },
         styleOverrides: {
           root: {
-            minHeight: 34,
-            borderRadius: 10,
-            paddingInline: 12,
+            minHeight: 30,
+            borderRadius: 6,
+            paddingInline: 10,
+            paddingBlock: 4,
+            fontWeight: 500,
           },
-          containedPrimary: {
-            boxShadow: 'none',
-          },
+          containedPrimary: { boxShadow: 'none' },
         },
       },
       MuiIconButton: {
-        styleOverrides: {
-          root: {
-            borderRadius: 10,
-          },
-        },
+        styleOverrides: { root: { borderRadius: 6 } },
       },
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
-            borderRadius: 10,
-            backgroundColor: isDark ? alpha('#0f172a', 0.42) : '#ffffff',
+            borderRadius: 6,
+            backgroundColor: isDark ? alpha('#0d1117', 0.4) : '#ffffff',
           },
-          input: {
-            paddingTop: 9,
-            paddingBottom: 9,
-            fontSize: 14,
-          },
+          input: { paddingTop: 7, paddingBottom: 7, fontSize: 13 },
         },
       },
       MuiInputBase: {
-        styleOverrides: {
-          input: {
-            fontSize: 14,
-          },
-        },
+        styleOverrides: { input: { fontSize: 13 } },
       },
       MuiTableCell: {
         styleOverrides: {
           root: {
-            paddingTop: 10,
-            paddingBottom: 10,
+            paddingTop: 8,
+            paddingBottom: 8,
             borderBottom: `1px solid ${palette.divider}`,
+            fontSize: 13,
           },
           head: {
-            fontSize: 12,
+            fontSize: 11,
             fontWeight: 600,
             color: palette.text.secondary,
-            backgroundColor: isDark ? alpha('#0f172a', 0.55) : alpha('#f8fafc', 0.95),
+            backgroundColor: isDark
+              ? alpha('#0d1117', 0.6)
+              : alpha('#f6f8fa', 0.95),
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
           },
         },
       },
       MuiChip: {
         styleOverrides: {
-          root: {
-            height: 24,
-            fontSize: 12,
-            fontWeight: 600,
-            borderRadius: 999,
-          },
+          root: { height: 22, fontSize: 11, fontWeight: 600, borderRadius: 4 },
         },
       },
       MuiListItemButton: {
         styleOverrides: {
           root: {
-            minHeight: 40,
-            borderRadius: 10,
-            marginBottom: 4,
-            paddingInline: 10,
+            minHeight: 34,
+            borderRadius: 6,
+            marginBottom: 2,
+            paddingInline: 8,
           },
         },
       },
       MuiListItemIcon: {
         styleOverrides: {
-          root: {
-            minWidth: 34,
-            color: palette.text.secondary,
-          },
+          root: { minWidth: 30, color: palette.text.secondary },
         },
       },
       MuiDivider: {
-        styleOverrides: {
-          root: {
-            borderColor: palette.divider,
-          },
-        },
+        styleOverrides: { root: { borderColor: palette.divider } },
       },
     },
   });

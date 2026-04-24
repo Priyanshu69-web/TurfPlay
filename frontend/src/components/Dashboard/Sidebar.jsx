@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Avatar,
   Box,
   Divider,
   Drawer,
@@ -8,14 +7,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Stack,
   Tooltip,
   Typography,
 } from '@mui/material';
 import { alpha, useTheme } from '@mui/material/styles';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShieldCheck, Sparkles } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { Layers } from 'lucide-react';
 import {
   DASHBOARD_DRAWER_COLLAPSED,
   DASHBOARD_DRAWER_WIDTH,
@@ -25,76 +22,55 @@ const SidebarContent = ({ menuItems, collapsed, onNavigate }) => {
   const theme = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   return (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', px: 1.5, py: 1.5 }}>
-      <Stack
-        direction="row"
-        spacing={1.5}
-        alignItems="center"
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', px: collapsed ? 1 : 1.5, py: 1.5, overflowY: 'auto' }}>
+      {/* Brand */}
+      <Box
         sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
           px: 1,
-          py: 1,
-          minHeight: 56,
+          py: 0.75,
+          mb: 1,
+          minHeight: 40,
         }}
       >
-        <Avatar
-          variant="rounded"
-          sx={{
-            width: 36,
-            height: 36,
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
-          }}
-        >
-          {user?.role === 1 ? <ShieldCheck size={18} /> : <Sparkles size={18} />}
-        </Avatar>
-
-        {!collapsed ? (
-          <Box sx={{ minWidth: 0 }}>
-            <Typography variant="h2" noWrap>
-              TurfPlay
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              {user?.role === 1 ? 'Admin panel' : 'User dashboard'}
-            </Typography>
-          </Box>
-        ) : null}
-      </Stack>
-
-      {!collapsed ? (
         <Box
           sx={{
-            mt: 1.5,
-            px: 1.5,
-            py: 1.5,
-            borderRadius: 2.5,
-            border: `1px solid ${theme.palette.divider}`,
-            bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.04),
+            width: 26,
+            height: 26,
+            borderRadius: '6px',
+            bgcolor: 'primary.main',
+            display: 'grid',
+            placeItems: 'center',
+            color: 'white',
+            flexShrink: 0,
           }}
         >
-          <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: '0.12em' }}>
-            Signed in as
-          </Typography>
-          <Typography variant="body1" sx={{ mt: 1, fontWeight: 600 }} noWrap>
-            {user?.name || 'User'}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" noWrap>
-            {user?.email || 'No email'}
-          </Typography>
+          <Layers size={14} />
         </Box>
-      ) : null}
+        {!collapsed && (
+          <Typography
+            variant="body1"
+            sx={{ fontWeight: 700, letterSpacing: '-0.01em', fontSize: 13 }}
+          >
+            TurfPlay
+          </Typography>
+        )}
+      </Box>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider sx={{ mb: 1 }} />
 
+      {/* Nav */}
       <List disablePadding sx={{ flex: 1 }}>
         {menuItems.map((item) => {
           const active = item.path.endsWith('/dashboard')
             ? location.pathname === item.path || location.pathname === `${item.path}/`
             : location.pathname.startsWith(item.path);
 
-          const content = (
+          const btn = (
             <ListItemButton
               selected={active}
               onClick={() => {
@@ -103,58 +79,42 @@ const SidebarContent = ({ menuItems, collapsed, onNavigate }) => {
               }}
               sx={{
                 justifyContent: collapsed ? 'center' : 'flex-start',
-                px: collapsed ? 1 : 1.25,
+                px: collapsed ? 0.75 : 1,
                 '&.Mui-selected': {
-                  bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.12),
+                  bgcolor: alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.18 : 0.1),
                   color: 'primary.main',
+                  '& .MuiListItemIcon-root': { color: 'primary.main' },
+                },
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.text.primary, 0.05),
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: collapsed ? 0 : 34 }}>
-                <item.icon size={18} />
+              <ListItemIcon sx={{ minWidth: collapsed ? 0 : 28 }}>
+                <item.icon size={15} />
               </ListItemIcon>
-              {!collapsed ? (
+              {!collapsed && (
                 <ListItemText
                   primary={item.label}
                   primaryTypographyProps={{
-                    variant: 'body1',
-                    fontWeight: active ? 600 : 500,
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 400,
                     noWrap: true,
                   }}
                 />
-              ) : null}
+              )}
             </ListItemButton>
           );
 
           return collapsed ? (
             <Tooltip key={item.path} title={item.label} placement="right">
-              {content}
+              {btn}
             </Tooltip>
           ) : (
-            <React.Fragment key={item.path}>{content}</React.Fragment>
+            <React.Fragment key={item.path}>{btn}</React.Fragment>
           );
         })}
       </List>
-
-      {!collapsed ? (
-        <Box
-          sx={{
-            mt: 1.5,
-            px: 1.5,
-            py: 1.5,
-            borderRadius: 2.5,
-            bgcolor: alpha(theme.palette.success.main, theme.palette.mode === 'dark' ? 0.14 : 0.08),
-            border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-          }}
-        >
-          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-            Operations live
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-            Bookings, slots, and support flows stay visible without oversized panels.
-          </Typography>
-        </Box>
-      ) : null}
     </Box>
   );
 };
@@ -162,8 +122,19 @@ const SidebarContent = ({ menuItems, collapsed, onNavigate }) => {
 const Sidebar = ({ menuItems, mobileOpen, onMobileClose, collapsed }) => {
   const theme = useTheme();
 
+  const paperSx = {
+    width: collapsed ? DASHBOARD_DRAWER_COLLAPSED : DASHBOARD_DRAWER_WIDTH,
+    boxSizing: 'border-box',
+    overflowX: 'hidden',
+    bgcolor: theme.palette.background.paper,
+    transition: theme.transitions.create('width', {
+      duration: theme.transitions.duration.shorter,
+    }),
+  };
+
   return (
     <>
+      {/* Mobile */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
@@ -171,15 +142,13 @@ const Sidebar = ({ menuItems, mobileOpen, onMobileClose, collapsed }) => {
         ModalProps={{ keepMounted: true }}
         sx={{
           display: { xs: 'block', lg: 'none' },
-          '& .MuiDrawer-paper': {
-            width: DASHBOARD_DRAWER_WIDTH,
-            boxSizing: 'border-box',
-          },
+          '& .MuiDrawer-paper': { width: DASHBOARD_DRAWER_WIDTH, boxSizing: 'border-box' },
         }}
       >
         <SidebarContent menuItems={menuItems} collapsed={false} onNavigate={onMobileClose} />
       </Drawer>
 
+      {/* Desktop */}
       <Drawer
         variant="permanent"
         open
@@ -187,15 +156,7 @@ const Sidebar = ({ menuItems, mobileOpen, onMobileClose, collapsed }) => {
           display: { xs: 'none', lg: 'block' },
           width: collapsed ? DASHBOARD_DRAWER_COLLAPSED : DASHBOARD_DRAWER_WIDTH,
           flexShrink: 0,
-          [`& .MuiDrawer-paper`]: {
-            width: collapsed ? DASHBOARD_DRAWER_COLLAPSED : DASHBOARD_DRAWER_WIDTH,
-            boxSizing: 'border-box',
-            overflowX: 'hidden',
-            bgcolor: theme.palette.background.paper,
-            transition: theme.transitions.create('width', {
-              duration: theme.transitions.duration.shorter,
-            }),
-          },
+          [`& .MuiDrawer-paper`]: paperSx,
         }}
       >
         <SidebarContent menuItems={menuItems} collapsed={collapsed} />

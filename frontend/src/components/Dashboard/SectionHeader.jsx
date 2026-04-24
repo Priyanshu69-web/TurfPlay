@@ -1,22 +1,18 @@
 import React from 'react';
 import { Stack, Typography } from '@mui/material';
 
-const SectionHeader = ({ title, description, actions = null }) => (
+/**
+ * Minimal section-level heading. No descriptions — keep UI scannable.
+ */
+const SectionHeader = ({ title, actions = null }) => (
   <Stack
-    direction={{ xs: 'column', sm: 'row' }}
+    direction="row"
     spacing={2}
     justifyContent="space-between"
-    alignItems={{ xs: 'flex-start', sm: 'center' }}
-    sx={{ mb: 2.5 }}
+    alignItems="center"
+    sx={{ mb: 2 }}
   >
-    <div>
-      <Typography variant="h2">{title}</Typography>
-      {description ? (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-          {description}
-        </Typography>
-      ) : null}
-    </div>
+    <Typography variant="h2">{title}</Typography>
     {actions}
   </Stack>
 );

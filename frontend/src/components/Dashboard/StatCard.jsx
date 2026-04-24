@@ -5,22 +5,21 @@ import { alpha, useTheme } from '@mui/material/styles';
 const toneMap = {
   blue: 'info',
   green: 'success',
-  purple: null,  // Custom hex
+  purple: null,
   red: 'error',
   amber: 'warning',
 };
 
 const getToneColor = (theme, tone) => {
   const paletteKey = toneMap[tone];
-  if (tone === 'purple') {
-    return '#7c3aed';
-  }
-  if (paletteKey) {
-    return theme.palette[paletteKey]?.main ?? theme.palette.primary.main;
-  }
+  if (tone === 'purple') return '#7c3aed';
+  if (paletteKey) return theme.palette[paletteKey]?.main ?? theme.palette.primary.main;
   return theme.palette.primary.main;
 };
 
+/**
+ * Compact stat card — minimal padding, no heavy icon background.
+ */
 const StatCard = ({ icon: Icon, label, value, tone = 'green', color, helper }) => {
   const theme = useTheme();
   const toneColor = getToneColor(theme, color || tone);
@@ -31,41 +30,40 @@ const StatCard = ({ icon: Icon, label, value, tone = 'green', color, helper }) =
       sx={{
         p: 3,
         minWidth: 0,
-        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 1,
+        borderRadius: 2,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 2 }}>
-        <Box sx={{ minWidth: 0 }}>
-          <Typography variant="body2" color="text.secondary">
-            {label}
-          </Typography>
-          <Typography variant="h1" sx={{ mt: 1 }}>
-            {value}
-          </Typography>
-          {helper ? (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              {helper}
-            </Typography>
-          ) : null}
-        </Box>
-
-        {Icon ? (
-          <Box
-            sx={{
-              width: 34,
-              height: 34,
-              borderRadius: 2,
-              display: 'grid',
-              placeItems: 'center',
-              color: toneColor,
-              bgcolor: alpha(toneColor, theme.palette.mode === 'dark' ? 0.2 : 0.1),
-              flexShrink: 0,
-            }}
-          >
-            <Icon size={18} />
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+          {label}
+        </Typography>
+        {Icon && (
+          <Box sx={{ color: toneColor, opacity: 0.7 }}>
+            <Icon size={15} />
           </Box>
-        ) : null}
+        )}
       </Box>
+
+      <Typography
+        sx={{
+          fontSize: 24,
+          fontWeight: 700,
+          lineHeight: 1.1,
+          letterSpacing: '-0.02em',
+          color: 'text.primary',
+        }}
+      >
+        {value}
+      </Typography>
+
+      {helper && (
+        <Typography variant="body2" color="text.secondary">
+          {helper}
+        </Typography>
+      )}
     </Paper>
   );
 };

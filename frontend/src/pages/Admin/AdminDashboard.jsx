@@ -34,7 +34,6 @@ const AdminDashboard = () => {
   return (
     <DashboardShell
       title="Admin Dashboard"
-      subtitle="Manage venues, slots, bookings, users, and support operations from one consistent workspace."
       menuItems={menuItems}
       onLogout={handleLogout}
     >
