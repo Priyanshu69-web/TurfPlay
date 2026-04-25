@@ -1,51 +1,53 @@
-import React, { useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
-import { useNavigate, Link, NavLink } from 'react-router-dom';
+import React, { useState } from 'react'
+import { motion } from 'motion/react';
+import { useNavigate, Link } from 'react-router-dom';
 import DropdownMenu from './DropDownMenu';
 import { useAuth } from '../context/AuthContext';
-import ThemeToggle from './ui/ThemeToggle';
-import { Menu, X, Sparkles } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import { Moon, Sun } from 'lucide-react';
 
 function Navigation() {
     const { user, logout, loading } = useAuth();
+    const { isDark, toggleTheme } = useTheme();
     const navigate = useNavigate();
 
     const handleLogout = () => {
         logout();
         navigate("/login");
-    };
-
+    }
     if (loading) return null;
 
-    const links = [
-        { label: 'Home', to: '/' },
-        { label: 'Book Slot', to: '/booking' },
-        { label: 'Contact', to: '/contact' },
-    ];
-
     return (
-        <ul className='nav-ul flex flex-col items-center gap-5 sm:flex-row sm:gap-6'>
-            {links.map((link) => (
-                <li key={link.to} className='nav-li'>
-                    <NavLink
-                        to={link.to}
-                        className={({ isActive }) =>
-                            `nav-link ${isActive ? 'text-[var(--app-text)]' : ''}`
-                        }
-                    >
-                        {link.label}
-                    </NavLink>
-                </li>
-            ))}
-
+        <ul className='nav-ul flex gap-4 items-center flex-col sm:flex-row'>
             <li className='nav-li'>
-                <ThemeToggle />
+                <Link to="/" className='nav-link hover:backdrop-blur-lg'>Home</Link>
+            </li>
+            <li className='nav-li'>
+                <Link to="/booking" className='nav-link'>Book Slot</Link>
+            </li>
+            <li className='nav-li'>
+                <Link to="/contact" className='nav-link'>Contact</Link>
+            </li>
+
+            {/* Theme Toggle Button */}
+            <li className='nav-li'>
+                <button
+                    onClick={toggleTheme}
+                    className='p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors'
+                    title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                >
+                    {isDark ? (
+                        <Sun size={20} className='text-yellow-400' />
+                    ) : (
+                        <Moon size={20} className='text-gray-700' />
+                    )}
+                </button>
             </li>
 
             {user ? (<>
                 <li className='nav-li'><DropdownMenu label={user.name} /></li>
                 <li className='nav-li'>
-                    <button onClick={handleLogout} className='nav-link text-rose-500 hover:text-rose-500'>Logout</button>
+                    <button onClick={handleLogout} className='nav-link'>Logout</button>
                 </li>
             </>
             ) : (
@@ -55,59 +57,43 @@ function Navigation() {
                     </li>
                 </>
             )}
-        </ul>
-    );
+        </ul >
+    )
 }
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
+    const { isDark } = useTheme();
 
     return (
-        <header className="sticky top-0 inset-x-0 z-40 px-4 py-4 sm:px-6">
-            <div className="mx-auto max-w-7xl rounded-[1.75rem] border border-[var(--app-border)] bg-[var(--app-surface)] px-5 py-4 shadow-[var(--app-shadow)] backdrop-blur-xl sm:px-6">
-                <div className="flex items-center justify-between gap-4 py-1 sm:py-0">
-                    <Link to="/" className="min-w-0">
-                        <div className="flex items-center gap-3">
-                            <div className="brand-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-white shadow-lg shadow-emerald-500/20">
-                                <Sparkles size={18} />
-                            </div>
-                            <div className="min-w-0">
-                                <h1 className="truncate text-2xl font-bold text-[var(--app-text)]">TurfPlay</h1>
-                                <p className="truncate text-xs uppercase tracking-[0.24em] text-muted">Premium turf booking</p>
-                            </div>
+        <div className={`sticky top-0 inset-x-0 z-20 w-full backdrop-blur-lg ${isDark ? 'bg-gray-900/80' : 'bg-white/80'} p-4 px-6 shadow-lg border-b ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
+            <div className='mx-auto c-space max-w-7xl'>
+                <div className='flex items-center justify-between py-2 sm:py-0'>
+                    <Link to="/">
+                        <div className="flex items-center space-x-2">
+                            <h1 className={`text-2xl font-bold font-pacifico ${isDark ? 'text-white' : 'text-gray-800'}`}>TurfPlay</h1>
                         </div>
                     </Link>
-
-                    <button
-                        type="button"
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-[var(--app-text-muted)] transition hover:text-[var(--app-text)] sm:hidden"
-                    >
-                        {isOpen ? <X size={20} /> : <Menu size={20} />}
+                    <button onClick={() => setIsOpen(!isOpen)} className={`flex cursor-pointer ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} focus:outline-none sm:hidden`}>
+                        <img src={isOpen ? "/assets/close.svg" : "/assets/menu.svg"} className='w-6 h-6' alt='toggle' />
                     </button>
-
-                    <nav className="hidden sm:flex sm:items-center">
+                    <nav className='hidden sm:flex'>
                         <Navigation />
                     </nav>
                 </div>
-
-                <AnimatePresence>
-                    {isOpen ? (
-                        <motion.div
-                            className="block overflow-hidden text-center sm:hidden"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                        >
-                            <nav className='pb-3 pt-5'>
-                                <Navigation />
-                            </nav>
-                        </motion.div>
-                    ) : null}
-                </AnimatePresence>
             </div>
-        </header>
-    );
-};
+            {isOpen && (<motion.div className={`block overflow-hidden text-center sm:hidden ${isDark ? 'bg-gray-800' : 'bg-gray-50'}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                style={{ maxHeight: "100vh" }}
+                transition={{ duration: 1 }}
+            >
+                <nav className='pb-5'>
+                    <Navigation />
+                </nav>
+            </motion.div>)}
+        </div>
+    )
+}
 
-export default Navbar;
+export default Navbar
