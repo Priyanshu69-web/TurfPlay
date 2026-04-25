@@ -18,7 +18,7 @@ import UserDashboard from "./pages/User/Userdashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
-import { toast } from "sonner";
+import { Toaster } from "sonner";
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -53,6 +53,19 @@ function AppContent() {
 
   return (
     <div className={isDark ? 'dark' : ''}>
+      <Toaster
+        position="top-right"
+        theme={isDark ? 'dark' : 'light'}
+        richColors
+        closeButton
+        toastOptions={{
+          duration: 4000,
+          style: {
+            borderRadius: '16px',
+            fontFamily: 'inherit',
+          },
+        }}
+      />
       <Router>
         <Routes>
           {/* Public routes */}

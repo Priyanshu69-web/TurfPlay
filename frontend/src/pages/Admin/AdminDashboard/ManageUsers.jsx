@@ -14,7 +14,8 @@ import StatusBadge from '../../../components/Dashboard/StatusBadge';
 import Modal from '../../../components/Dashboard/Modal';
 import Button from '../../../components/Dashboard/Button';
 import { useGetUsersQuery, useBlockUserMutation } from '../../../redux/api/adminApi';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
+import useDebounce from '../../../hooks/useDebounce';
 
 const ManageUsers = () => {
   const [filters, setFilters] = useState({
@@ -22,10 +23,15 @@ const ManageUsers = () => {
     limit: 10,
     search: '',
   });
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput, 400);
   const [selectedUser, setSelectedUser] = useState(null);
   const [blockReason, setBlockReason] = useState('');
 
-  const { data: usersData, isLoading, refetch } = useGetUsersQuery(filters);
+  // Apply debounced search to API filters
+  const queryFilters = { ...filters, search: debouncedSearch };
+
+  const { data: usersData, isLoading, refetch } = useGetUsersQuery(queryFilters);
   const [blockUser, { isLoading: isBlockingUser }] = useBlockUserMutation();
 
   const handleBlockUser = async () => {
@@ -35,7 +41,7 @@ const ManageUsers = () => {
         isBlocked: !selectedUser.isBlocked,
         reason: blockReason,
       }).unwrap();
-      toast.success(selectedUser.isBlocked ? 'User unblocked successfully' : 'User blocked successfully');
+      toast.success(selectedUser.isBlocked ? 'User unblocked' : 'User blocked', { id: 'block-user' });
       setSelectedUser(null);
       setBlockReason('');
       refetch();
@@ -46,6 +52,11 @@ const ManageUsers = () => {
 
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value, page: key === 'page' ? value : 1 }));
+  };
+
+  const handleReset = () => {
+    setFilters({ page: 1, limit: 10, search: '' });
+    setSearchInput('');
   };
 
   const users = usersData?.data || [];
@@ -108,8 +119,8 @@ const ManageUsers = () => {
           <TextField
             label="Search by name or email"
             size="small"
-            value={filters.search}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
           />
           <TextField
             label="Rows per page"
@@ -118,7 +129,7 @@ const ManageUsers = () => {
             value={filters.limit}
             onChange={(e) => handleFilterChange('limit', Number(e.target.value) || 10)}
           />
-          <Button variant="secondary" onClick={() => setFilters({ page: 1, limit: 10, search: '' })}>
+          <Button variant="secondary" onClick={handleReset}>
             Reset filters
           </Button>
         </Box>

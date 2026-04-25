@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { toast } from "sonner";
+import Skeleton from "../components/ui/Skeleton";
+import Spinner from "../components/ui/Spinner";
 import {
   AlertCircle,
   CalendarDays,
@@ -24,6 +26,7 @@ const Booking = () => {
   const [selectedDate, setSelectedDate] = useState("");
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
+  const [preferredTime, setPreferredTime] = useState("");
   const [loading, setLoading] = useState(false);
   const [slotLoading, setSlotLoading] = useState(false);
   const [bookingDetails, setBookingDetails] = useState({
@@ -36,6 +39,8 @@ const Booking = () => {
 
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const slotSectionRef = useRef(null);
 
   useEffect(() => {
     const fetchTurfs = async () => {
@@ -58,10 +63,19 @@ const Booking = () => {
     fetchTurfs();
   }, []);
 
+  // Pre-fill from navigation state (when coming from BookingSection quick-book)
   useEffect(() => {
     const todayDate = new Date().toISOString().split("T")[0];
-    setSelectedDate(todayDate);
-  }, []);
+    const state = location.state;
+    if (state?.date) {
+      setSelectedDate(state.date);
+    } else {
+      setSelectedDate(todayDate);
+    }
+    if (state?.preferredTime) {
+      setPreferredTime(state.preferredTime);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     if (!selectedTurf || !selectedDate) return;
@@ -79,7 +93,25 @@ const Booking = () => {
           },
         });
 
-        setSlots(response.data.data || []);
+        const fetchedSlots = response.data.data || [];
+        setSlots(fetchedSlots);
+
+        // Auto-select a slot matching preferred time from quick-book
+        if (preferredTime && fetchedSlots.length > 0) {
+          // preferredTime is like "06:00 AM" – convert to 24h for matching
+          const match = fetchedSlots.find((s) => {
+            try {
+              const [timePart, ampm] = preferredTime.split(' ');
+              const [h, m] = timePart.split(':').map(Number);
+              const hour24 = ampm === 'PM' && h !== 12 ? h + 12 : (ampm === 'AM' && h === 12 ? 0 : h);
+              const formatted = `${String(hour24).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+              return s.startTime === formatted && s.status === 'available';
+            } catch { return false; }
+          });
+          if (match) setSelectedSlot(match);
+          // Scroll to slot section
+          setTimeout(() => slotSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400);
+        }
       } catch (error) {
         toast.error("Failed to fetch available slots");
         console.error(error);
@@ -89,7 +121,7 @@ const Booking = () => {
     };
 
     fetchSlots();
-  }, [selectedTurf, selectedDate]);
+  }, [selectedTurf, selectedDate, preferredTime]);
 
   const slotStats = useMemo(() => ({
     total: slots.length,
@@ -213,8 +245,10 @@ const Booking = () => {
               </div>
 
               {loading ? (
-                <div className="flex justify-center py-10">
-                  <span className="loading loading-spinner loading-lg"></span>
+                <div className="grid gap-3">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Skeleton.TurfCard key={i} />
+                  ))}
                 </div>
               ) : (
                 <div className="grid gap-3">
@@ -278,7 +312,7 @@ const Booking = () => {
               </div>
             </div>
 
-            <div className="surface-card p-6">
+            <div ref={slotSectionRef} className="surface-card p-6">
               <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <h2 className="text-xl font-semibold text-[var(--app-text)]">Select your slot</h2>
@@ -292,8 +326,10 @@ const Booking = () => {
               </div>
 
               {slotLoading ? (
-                <div className="flex justify-center py-12">
-                  <span className="loading loading-spinner loading-lg"></span>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <Skeleton.Slot key={i} />
+                  ))}
                 </div>
               ) : slots.length === 0 ? (
                 <div className="rounded-[1.4rem] border border-amber-500/20 bg-amber-500/10 p-6 text-sm text-amber-600 dark:text-amber-400">
@@ -487,6 +523,7 @@ const Booking = () => {
                 <CheckCircle2 size={18} />
                 Confirm Booking
               </button>
+
 
               {!user ? (
                 <p className="mt-3 text-sm text-amber-500">
