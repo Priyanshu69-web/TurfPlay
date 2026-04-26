@@ -31,7 +31,6 @@ const Login = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        // Clear error on type
         if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
     };
 
@@ -49,10 +48,15 @@ const Login = () => {
             localStorage.setItem("token", token);
             toast.success("Welcome back, " + user.name + "!", { id: toastId });
 
-            if (user?.role === 1) navigate("/admin/dashboard");
+            if (user?.role === "admin") navigate("/admin/dashboard");
             else navigate("/user/dashboard");
         } catch (error) {
-            toast.error(error?.data?.message || "Login failed. Please try again.", { id: toastId });
+            if (error?.data?.notVerified) {
+                toast.info("Please verify your email to login.", { id: toastId });
+                navigate("/verify-otp", { state: { email: formData.email } });
+            } else {
+                toast.error(error?.data?.message || "Login failed.", { id: toastId });
+            }
         }
     };
 
@@ -65,11 +69,6 @@ const Login = () => {
             eyebrow="Secure sign in"
             title="Welcome back"
             subtitle="Log in to manage bookings, handle operations, and keep every game on schedule."
-            aside={
-                <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-muted">
-                    Players and admins use the same calm design language, so the product feels trustworthy from the first screen.
-                </div>
-            }
         >
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
                 <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-white/6 p-4">
@@ -85,39 +84,29 @@ const Login = () => {
                 <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                     {/* Email */}
                     <div>
-                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">
-                            Email Address
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Email Address</label>
                         <div className="relative">
                             <Mail size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                             <input
                                 type="email"
                                 name="email"
-                                autoComplete="email"
                                 placeholder="you@example.com"
                                 value={formData.email}
                                 onChange={handleChange}
                                 className={`${inputBase} ${errors.email ? inputError : inputNormal}`}
                             />
                         </div>
-                        {errors.email && (
-                            <p className="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
-                                <span>⚠</span> {errors.email}
-                            </p>
-                        )}
+                        {errors.email && <p className="mt-1.5 text-xs text-rose-500">⚠ {errors.email}</p>}
                     </div>
 
                     {/* Password */}
                     <div>
-                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">
-                            Password
-                        </label>
+                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Password</label>
                         <div className="relative">
                             <Lock size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
                             <input
                                 type={showPassword ? "text" : "password"}
                                 name="password"
-                                autoComplete="current-password"
                                 placeholder="••••••••"
                                 value={formData.password}
                                 onChange={handleChange}
@@ -131,14 +120,9 @@ const Login = () => {
                                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                             </button>
                         </div>
-                        {errors.password && (
-                            <p className="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
-                                <span>⚠</span> {errors.password}
-                            </p>
-                        )}
+                        {errors.password && <p className="mt-1.5 text-xs text-rose-500">⚠ {errors.password}</p>}
                     </div>
 
-                    {/* Remember me + forgot password */}
                     <div className="flex items-center justify-between gap-4 text-sm">
                         <label className="flex cursor-pointer items-center gap-2 text-muted select-none">
                             <input
@@ -149,10 +133,7 @@ const Login = () => {
                             />
                             Remember me
                         </label>
-                        <Link
-                            to="/forgot-password"
-                            className="font-semibold text-emerald-500 transition-colors hover:text-emerald-400"
-                        >
+                        <Link to="/forgot-password" size="sm" className="font-semibold text-emerald-500 transition-colors hover:text-emerald-400">
                             Forgot Password?
                         </Link>
                     </div>
@@ -164,17 +145,7 @@ const Login = () => {
                         disabled={isLoading}
                         className="brand-gradient flex w-full items-center justify-center gap-2 rounded-2xl py-3 font-semibold text-white transition-all duration-300 disabled:opacity-60"
                     >
-                        {isLoading ? (
-                            <>
-                                <Spinner size={18} />
-                                Signing in…
-                            </>
-                        ) : (
-                            <>
-                                Sign In
-                                <ArrowRight size={18} />
-                            </>
-                        )}
+                        {isLoading ? <><Spinner size={18} /> Signing in…</> : <>Sign In <ArrowRight size={18} /></>}
                     </motion.button>
 
                     <p className="text-center text-sm text-muted">

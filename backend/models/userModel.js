@@ -2,6 +2,12 @@ import mongoose, { Schema } from "mongoose";
 
 const UserModelSchema = new mongoose.Schema(
   {
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: [true, "Tenant ID is required"],
+      index: true,
+    },
     name: {
       type: String,
       required: [true, "Name is required"],
@@ -21,8 +27,10 @@ const UserModelSchema = new mongoose.Schema(
       select: false,
     },
     role: {
-      type: Number,
-      default: 0, // 0: user, 1: admin
+      type: String,
+      enum: ["admin", "user"],
+      default: "user",
+      index: true,
     },
     phone: {
       type: String,
@@ -36,11 +44,19 @@ const UserModelSchema = new mongoose.Schema(
     blockedReason: String,
     address: String,
     profileImage: String,
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: String,
+    otpExpiry: Date,
     resetToken: String,
     resetTokenExpiry: Date,
   },
   { timestamps: true }
 );
+
+UserModelSchema.index({ tenantId: 1, role: 1 });
 
 const UserModel = mongoose.model("User", UserModelSchema);
 export default UserModel;

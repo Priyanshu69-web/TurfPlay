@@ -9,6 +9,8 @@ import slotRoutes from "./routes/slotRoutes.js";
 import turfRoutes from "./routes/turfRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import TenantModel from "./models/tenantModel.js";
+import UserModel from "./models/userModel.js";
 
 dotenv.config();
 
@@ -61,24 +63,36 @@ app.get("/api/v1/health", (req, res) => {
 app.get("/api/v1/seed-admin", async (req, res) => {
   try {
     const email = "admin@gmail.com";
-    const UserModel = (await import("./models/userModel.js")).default;
     const bcrypt = (await import("bcryptjs")).default;
-    
+
     const existing = await UserModel.findOne({ email });
     if (existing) {
-      existing.role = 1;
+      existing.role = "admin";
       await existing.save();
       return res.status(200).json({ message: "Admin updated" });
     }
-    
+
+    const tenantId = new UserModel()._id;
+    const adminId = new UserModel()._id;
+
+    await TenantModel.create({
+      _id: tenantId,
+      name: "Seed Admin TurfPlay",
+      ownerId: adminId,
+      subscriptionPlan: "trial",
+    });
+
     const hashedPassword = await bcrypt.hash("admin123", 10);
     const admin = new UserModel({
+      _id: adminId,
       name: "Admin",
       email: email,
       password: hashedPassword,
-      role: 1
+      role: "admin",
+      tenantId,
     });
     await admin.save();
+
     res.status(201).json({ message: "Admin created: admin123" });
   } catch (err) {
     res.status(500).json({ error: err.message });

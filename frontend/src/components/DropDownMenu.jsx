@@ -12,7 +12,7 @@ const DropdownMenu = ({ label, inMobileNav = false }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
 
-    const baseMenuData = user?.role === 1 ? ADMIN_MENU_DATA : USER_MENU_DATA;
+    const baseMenuData = user?.role === 'admin' ? ADMIN_MENU_DATA : USER_MENU_DATA;
 
     const menuData = baseMenuData.map((item) => ({
         ...item,

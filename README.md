@@ -1,4 +1,4 @@
-# 🎾 TurfPlay - Premium Turf Booking Platform
+# 🎾 TurfPlay - Premium Multi-tenant Turf Booking SaaS
 
 TurfPlay is a modern, high-performance web application designed for seamless sports turf management and booking. Built with a focus on **Visual Excellence**, **Mobile Responsiveness**, and **Professional UX**, it offers a complete solution for turf owners and sports enthusiasts.
 
@@ -6,25 +6,30 @@ TurfPlay is a modern, high-performance web application designed for seamless spo
 
 ## ✨ Features
 
+### 🔐 Advanced Authentication
+- **OTP Verification**: Secure email verification using **Resend** for all new registrations.
+- **Secure Recovery**: Full Forgot/Reset Password flow with 6-digit OTP verification.
+- **Auto-Login**: Seamless transition from verification to dashboard.
+- **Protected Routes**: Prevent logged-in users from accessing Auth pages.
+
 ### 👤 User Capabilities
 - **Quick Booking**: A streamlined, 3-step booking process from the landing page.
-- **Real-Time Slot Selection**: Interactive slot grid with live availability status (Available, Booked, Blocked).
+- **Real-Time Slot Selection**: Interactive slot grid with live availability status.
+- **Pre-filled Data**: Intelligent form handling that auto-fills player details from profile context.
 - **Personal Dashboard**: Track upcoming games, view booking history, and manage account details.
-- **Responsive Design**: Fully optimized for mobile, tablet, and desktop viewports.
-- **Premium UI**: Glass-morphism effects, smooth transitions, and high-density data views.
+- **Mobile First**: Fully optimized for mobile, tablet, and desktop viewports.
 
-### 🛡️ Admin Capabilities
-- **Advanced Dashboard**: Overview of platform activity and key metrics.
+### 🛡️ Admin & SaaS Capabilities
+- **Multi-tenancy**: Built-in support for multiple turf organizations using `tenantId` isolation.
+- **Cloudinary Image Management**: Professional image upload for turfs with multi-photo support and previews.
 - **User Management**: Search, filter, and manage user access (Block/Unblock) with debounced search.
 - **Slot Management**: Dynamically generate or block slots for maintenance or special events.
 - **Booking Overview**: High-density tables to monitor all platform transactions.
 
 ### 🚀 Performance & UI/UX Highlights
-- **Skeleton Loaders**: Custom pulse animations for all data-fetching states to provide a "zero-latency" feel.
-- **Debounced Search**: Optimized API calls using `useDebounce` hook for real-time search filtering.
-- **Modern Notifications**: Clean, non-intrusive success and error handling using **Sonner**.
-- **Auth Flow**: Secure JWT-based authentication with inline validation and password strength indicators.
-- **Shadcn UI Style**: Custom components built for maximum flexibility and a premium SaaS aesthetic.
+- **Skeleton Loaders**: Custom pulse animations for all data-fetching states.
+- **Glass-morphism UI**: Vibrant colors, dark mode support, and smooth Framer Motion transitions.
+- **Modern Notifications**: Clean, rich-color success and error handling using **Sonner**.
 
 ---
 
@@ -34,7 +39,8 @@ TurfPlay is a modern, high-performance web application designed for seamless spo
 |---|---|
 | **Frontend** | React, Redux Toolkit, Tailwind CSS, Lucide React, Framer Motion, Sonner |
 | **Backend** | Node.js, Express.js (v5), MongoDB, Mongoose |
-| **Auth** | JWT (JSON Web Tokens), Bcrypt.js |
+| **Auth** | JWT, Bcrypt.js, **Resend** (OTP) |
+| **Storage** | **Cloudinary** (Images) |
 | **Tools** | PNPM, Vite, Axios |
 
 ---
@@ -43,7 +49,8 @@ TurfPlay is a modern, high-performance web application designed for seamless spo
 
 ### 📋 Prerequisites
 - **Node.js** (v18 or higher)
-- **PNPM** (recommended) or NPM/Yarn
+- **Cloudinary Account** (for image uploads)
+- **Resend Account** (for email verification)
 - **MongoDB** (Local or Atlas)
 
 ### 📂 Repository Structure
@@ -69,8 +76,11 @@ TurfPlay/
    Create a `.env` file in the `backend` directory:
    ```env
    PORT=8080
-   MONGO_URI=mongodb://127.0.0.1:27017/turfplay
+   MONGO_URI=your_mongodb_uri
    SECRET_KEY=your_secure_secret_key
+   CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+   RESEND_API_KEY=re_your_api_key
+   FRONTEND_URL=http://localhost:5173
    ```
    Start the backend:
    ```bash
@@ -83,55 +93,32 @@ TurfPlay/
    pnpm install
    pnpm dev
    ```
-   The app will be available at `http://localhost:5173` (or `3000` depending on your config).
 
 ### 🧪 Seeding Data
-To test the application with realistic data, run the seed script:
+To test with pre-verified users and sample turfs (including your test email):
 ```bash
 cd backend
 node scripts/seed.js
 ```
-This will populate the database with turfs, users, and 7 days of slot availability.
 
 ---
-
-## 🔮 SaaS Roadmap (Future Evolution)
-
-To transition TurfPlay into a full-scale SaaS product, the following features are planned:
-
-- [ ] **Multi-tenancy**: Dedicated organization profiles for individual turf owners.
-- [ ] **Payment Integration**: Razorpay/Stripe for online slot confirmation.
-- [ ] **Automated Notifications**: Email and SMS alerts for booking confirmations and reminders.
-- [ ] **Revenue Analytics**: Advanced charts showing peak hours, monthly revenue, and occupancy rates.
-- [ ] **Waitlist System**: Automatically notify users when a booked slot becomes available.
-- [ ] **Recurring Bookings**: Allow users to reserve weekly slots for team practices.
-- [ ] **Mobile App**: A companion React Native app for on-the-go bookings.
 
 ## 🌐 Deployment Guide
 
-TurfPlay is ready for production. Follow these steps to deploy:
+### 1. Backend (Render)
+1. **Root Directory**: `backend`
+2. **Build Command**: `pnpm install`
+3. **Start Command**: `pnpm start`
+4. **Environment Variables**: Add all keys from your local `.env`.
 
-### 1. Backend Deployment (Render)
-1. **Create a Web Service** on Render and connect your repository.
-2. **Root Directory**: `backend`
-3. **Build Command**: `pnpm install`
-4. **Start Command**: `pnpm start`
-5. **Environment Variables**:
-   - `PORT`: `8080` (or leave empty, Render handles it)
-   - `MONGO_URI`: Your MongoDB Atlas connection string.
-   - `SECRET_KEY`: A secure random string for JWT.
-   - `FRONTEND_URL`: `https://your-app-name.vercel.app` (Your Vercel URL).
-
-### 2. Frontend Deployment (Vercel)
-1. **Create a Project** on Vercel and connect your repository.
-2. **Framework Preset**: `Vite`
-3. **Root Directory**: `frontend`
+### 2. Frontend (Vercel)
+1. **Framework**: `Vite`
+2. **Root Directory**: `frontend`
+3. **Build Command**: `pnpm build`
 4. **Environment Variables**:
-   - `VITE_API_URL`: `https://your-backend-name.onrender.com` (Your Render URL).
+   - `VITE_API_URL`: Your Render backend URL.
 
 ---
 
-## 📞 Support & Contact
-For any queries or collaboration, feel free to reach out via the Contact form in the application or contact the developers directly.
-
+## 📞 Support
 **TurfPlay - Play hard, book easy.** 🎾

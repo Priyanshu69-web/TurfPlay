@@ -9,7 +9,7 @@ export const turfApi = createApi({
     baseUrl: API_BASE_URL,
     credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token;
+      const token = getState().auth.token || localStorage.getItem("token");
       if (token) {
         headers.set('authorization', `Bearer ${token}`);
       }
@@ -19,32 +19,32 @@ export const turfApi = createApi({
   tagTypes: ['Turf'],
   endpoints: (builder) => ({
     getTurfs: builder.query({
-      query: () => API_PATHS.TURF.GET_ALL,
+      query: () => "/api/v1/turf/get-turfs",
       providesTags: ['Turf'],
     }),
     getTurfById: builder.query({
-      query: (id) => `${API_PATHS.TURF.GET_ALL}/${id}`,
+      query: (id) => `/api/v1/turf/get-turf/${id}`,
       providesTags: (result, error, id) => [{ type: 'Turf', id }],
     }),
     createTurf: builder.mutation({
-      query: (data) => ({
-        url: API_PATHS.TURF.CREATE,
+      query: (formData) => ({
+        url: "/api/v1/turf/create-turf",
         method: 'POST',
-        body: data,
+        body: formData, // FormData will automatically set correct headers
       }),
       invalidatesTags: ['Turf'],
     }),
     updateTurf: builder.mutation({
-      query: ({ id, ...data }) => ({
-        url: `${API_PATHS.TURF.UPDATE}/${id}`,
+      query: ({ id, body }) => ({
+        url: `/api/v1/turf/update-turf/${id}`,
         method: 'PUT',
-        body: data,
+        body: body, // body is FormData here
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Turf', id }, 'Turf'],
     }),
     deleteTurf: builder.mutation({
       query: (id) => ({
-        url: `${API_PATHS.TURF.GET_ALL}/${id}`,
+        url: `/api/v1/turf/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Turf'],

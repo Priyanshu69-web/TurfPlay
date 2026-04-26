@@ -40,9 +40,25 @@ const Booking = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+    if (user) {
+      setBookingDetails((prev) => ({
+        ...prev,
+        playerName: user.name || "",
+        playerPhone: user.phone || "",
+      }));
+    }
+  }, [user]);
+
   const slotSectionRef = useRef(null);
 
   useEffect(() => {
+    if (!user) {
+      setTurfs([]);
+      setSelectedTurf(null);
+      return;
+    }
+
     const fetchTurfs = async () => {
       try {
         setLoading(true);
@@ -61,7 +77,7 @@ const Booking = () => {
     };
 
     fetchTurfs();
-  }, []);
+  }, [user]);
 
   // Pre-fill from navigation state (when coming from BookingSection quick-book)
   useEffect(() => {

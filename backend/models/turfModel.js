@@ -2,6 +2,12 @@ import mongoose, { Schema } from "mongoose";
 
 const TurfModelSchema = new Schema(
   {
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: [true, "Tenant ID is required"],
+      index: true,
+    },
     name: {
       type: String,
       required: [true, "Turf name is required"],
@@ -55,6 +61,8 @@ const TurfModelSchema = new Schema(
   },
   { timestamps: true }
 );
+
+TurfModelSchema.index({ tenantId: 1, createdAt: -1 });
 
 const TurfModel = mongoose.model("Turf", TurfModelSchema);
 export default TurfModel;

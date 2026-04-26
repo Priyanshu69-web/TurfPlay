@@ -17,7 +17,7 @@ export const getSlots = async (req, res) => {
       });
     }
 
-    const slots = await getAvailableSlots(turfId, new Date(date));
+    const slots = await getAvailableSlots(req.tenantId, turfId, new Date(date));
 
     res.status(200).json({
       success: true,
@@ -48,7 +48,7 @@ export const createSlot = async (req, res) => {
       });
     }
 
-    const slots = await generateSlotsForDate(turfId, new Date(date));
+    const slots = await generateSlotsForDate(req.tenantId, turfId, new Date(date));
 
     res.status(201).json({
       success: true,
@@ -79,7 +79,7 @@ export const generateNextDaysSlots = async (req, res) => {
       });
     }
 
-    await generateSlotsForNextDays(turfId, days);
+    await generateSlotsForNextDays(req.tenantId, turfId, days);
 
     res.status(201).json({
       success: true,
@@ -98,8 +98,8 @@ export const generateNextDaysSlots = async (req, res) => {
 export const blockSlot = async (req, res) => {
   try {
     const { isBlocked, reason } = req.body;
-    const slot = await SlotModel.findByIdAndUpdate(
-      req.params.id,
+    const slot = await SlotModel.findOneAndUpdate(
+      { _id: req.params.id, tenantId: req.tenantId },
       {
         isBlocked,
         blockedReason: reason,
@@ -130,6 +130,7 @@ export const blockDateSlots = async (req, res) => {
 
     const result = await SlotModel.updateMany(
       {
+        tenantId: req.tenantId,
         turfId,
         date: { $gte: startDate, $lt: endDate },
       },
@@ -155,7 +156,7 @@ export const blockDateSlots = async (req, res) => {
 export const getAdminSlots = async (req, res) => {
   try {
     const { turfId, date, status, page = 1, limit = 20 } = req.query;
-    const filter = {};
+    const filter = { tenantId: req.tenantId };
 
     if (turfId) filter.turfId = turfId;
     if (status) filter.status = status;

@@ -24,22 +24,26 @@ const minutesToTime = (minutes) => {
  * Generate slots for a specific date and turf
  * Auto-generates slots based on turf's opening/closing times and slot duration
  */
-export const generateSlotsForDate = async (turfId, date) => {
+export const generateSlotsForDate = async (tenantId, turfId, date) => {
   try {
-    const turf = await TurfModel.findById(turfId);
+    const turf = await TurfModel.findOne({ _id: turfId, tenantId });
     if (!turf) {
       throw new Error("Turf not found");
     }
 
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0);
+
     // Check if slots already exist for this date
     const existingSlots = await SlotModel.findOne({
+      tenantId: turf.tenantId,
       turfId,
-      date: new Date(date).toISOString().split("T")[0],
+      date: targetDate,
     });
 
     if (existingSlots) {
       console.log("Slots already exist for this date");
-      return;
+      return [];
     }
 
     const startMinutes = timeToMinutes(turf.openingTime);
@@ -54,8 +58,9 @@ export const generateSlotsForDate = async (turfId, date) => {
       const slotEndTime = minutesToTime(currentMinutes + slotDuration);
 
       slots.push({
+        tenantId: turf.tenantId,
         turfId,
-        date: new Date(date),
+        date: targetDate,
         startTime: slotStartTime,
         endTime: slotEndTime,
         status: "available",
@@ -79,9 +84,9 @@ export const generateSlotsForDate = async (turfId, date) => {
 /**
  * Generate slots for next N days
  */
-export const generateSlotsForNextDays = async (turfId, days = 7) => {
+export const generateSlotsForNextDays = async (tenantId, turfId, days = 7) => {
   try {
-    const turf = await TurfModel.findById(turfId);
+    const turf = await TurfModel.findOne({ _id: turfId, tenantId });
     if (!turf) {
       throw new Error("Turf not found");
     }
@@ -92,7 +97,7 @@ export const generateSlotsForNextDays = async (turfId, days = 7) => {
     for (let i = 0; i < days; i++) {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + i);
-      await generateSlotsForDate(turfId, currentDate);
+      await generateSlotsForDate(tenantId, turfId, currentDate);
     }
 
     console.log(`Generated slots for next ${days} days`);

@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGetTurfsQuery } from '../redux/api/turfApi';
 import { MapPin, Loader2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const FACILITY_ICONS = {
   lights: '💡',
@@ -13,7 +13,10 @@ const FACILITY_ICONS = {
 };
 
 export default function PopularTurfs() {
-  const { data, isLoading } = useGetTurfsQuery();
+  const { isAuthenticated } = useAuth();
+  const { data, isLoading } = useGetTurfsQuery(undefined, {
+    skip: !isAuthenticated,
+  });
   const turfs = data?.data || [];
 
   return (
@@ -32,6 +35,13 @@ export default function PopularTurfs() {
         {isLoading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="w-12 h-12 text-green-500 animate-spin" />
+          </div>
+        ) : !isAuthenticated ? (
+          <div className="py-16 text-center text-muted">
+            <p>Sign in to view your organization&apos;s turf catalog and live availability.</p>
+            <Link to="/login" className="mt-4 inline-block text-green-400 hover:text-green-300 font-medium">
+              Sign in to continue
+            </Link>
           </div>
         ) : turfs.length === 0 ? (
           <div className="py-16 text-center text-muted">

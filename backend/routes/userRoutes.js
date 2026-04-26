@@ -3,6 +3,7 @@ import {
   getUserProfile,
   loginController,
   signupController,
+  verifyOtpController,
   updateProfile,
   changePassword,
   forgotPassword,
@@ -14,6 +15,7 @@ import { isAdmin, requireSignIn } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.post("/signup", signupController);
+router.post("/verify-otp", verifyOtpController);
 router.post("/login", loginController);
 router.get("/profile", requireSignIn, getUserProfile);
 router.put("/profile", requireSignIn, updateProfile);

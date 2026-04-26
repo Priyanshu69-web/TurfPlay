@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "motion/react";
-import { ArrowRight, Eye, EyeOff, User, Mail, Lock, UserPlus } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, User, Mail, Lock, UserPlus, CheckCircle2 } from "lucide-react";
 import AuthShell from "../../components/ui/AuthShell";
 import Spinner from "../../components/ui/Spinner";
-import { useRegisterMutation } from "../../redux/api/authApi";
+import { useRegisterMutation, useVerifyOtpMutation } from "../../redux/api/authApi";
+import { useDispatch } from "react-redux";
+import { setUser } from "../../redux/slices/authSlice";
 
 const passwordStrength = (pw) => {
     if (!pw) return { label: "", color: "", pct: 0 };
@@ -25,18 +27,22 @@ const passwordStrength = (pw) => {
 };
 
 const Register = () => {
+    const [step, setStep] = useState(1); // 1: Info, 2: OTP
     const [form, setForm] = useState({ name: "", email: "", password: "" });
+    const [otp, setOtp] = useState("");
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
-    const [register, { isLoading }] = useRegisterMutation();
+    const dispatch = useDispatch();
+    
+    const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
+    const [verifyOtp, { isLoading: isVerifyLoading }] = useVerifyOtpMutation();
 
     const strength = passwordStrength(form.password);
 
     const validate = () => {
         const errs = {};
         if (!form.name.trim()) errs.name = "Full name is required";
-        else if (form.name.trim().length < 2) errs.name = "Name must be at least 2 characters";
         if (!form.email.trim()) errs.email = "Email is required";
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = "Enter a valid email address";
         if (!form.password) errs.password = "Password is required";
@@ -50,18 +56,39 @@ const Register = () => {
         if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
 
-        const toastId = toast.loading("Creating your account…");
+        const toastId = toast.loading("Sending verification code…");
         try {
             await register(form).unwrap();
-            toast.success("Account created! Please sign in.", { id: toastId });
-            navigate("/login");
+            toast.success("Verification code sent to your email!", { id: toastId });
+            setStep(2);
         } catch (err) {
-            toast.error(err?.data?.message || "Registration failed. Please try again.", { id: toastId });
+            toast.error(err?.data?.message || "Registration failed.", { id: toastId });
+        }
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        if (otp.length !== 6) {
+            toast.error("Please enter a valid 6-digit code.");
+            return;
+        }
+
+        const toastId = toast.loading("Verifying code…");
+        try {
+            const res = await verifyOtp({ email: form.email, otp }).unwrap();
+            toast.success("Email verified! Welcome to TurfPlay.", { id: toastId });
+            
+            // Log user in automatically
+            localStorage.setItem("token", res.token);
+            dispatch(setUser({ user: res.user, token: res.token }));
+            navigate("/");
+        } catch (err) {
+            toast.error(err?.data?.message || "Verification failed.", { id: toastId });
         }
     };
 
@@ -71,133 +98,141 @@ const Register = () => {
 
     return (
         <AuthShell
-            eyebrow="Create account"
-            title="Join TurfPlay"
-            subtitle="Sign up once and move between discovery, booking, and account management without friction."
+            eyebrow={step === 1 ? "Create account" : "Verify Email"}
+            title={step === 1 ? "Join TurfPlay" : "Check your inbox"}
+            subtitle={step === 1 
+                ? "Sign up once and move between discovery, booking, and account management without friction."
+                : `We've sent a 6-digit verification code to ${form.email}.`}
         >
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-white/6 p-4">
-                    <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white">
-                        <UserPlus size={18} />
-                    </div>
-                    <div>
-                        <p className="font-semibold text-[var(--app-text)]">New player setup</p>
-                        <p className="text-sm text-muted">Create an account and start booking right away.</p>
-                    </div>
-                </div>
+                
+                {step === 1 ? (
+                    <form onSubmit={handleRegister} className="space-y-5" noValidate>
+                        <div className="mb-6 flex items-center gap-3 rounded-2xl border border-[var(--app-border)] bg-white/6 p-4">
+                            <div className="brand-gradient flex h-11 w-11 items-center justify-center rounded-2xl text-white">
+                                <UserPlus size={18} />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-[var(--app-text)]">New player setup</p>
+                                <p className="text-sm text-muted">Create an account and start booking.</p>
+                            </div>
+                        </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                    {/* Full Name */}
-                    <div>
-                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Full Name</label>
-                        <div className="relative">
-                            <User size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                        {/* Full Name */}
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Full Name</label>
+                            <div className="relative">
+                                <User size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                                <input
+                                    type="text"
+                                    name="name"
+                                    placeholder="Arjun Sharma"
+                                    value={form.name}
+                                    onChange={handleChange}
+                                    className={`${inputBase} ${errors.name ? inputError : inputNormal}`}
+                                />
+                            </div>
+                            {errors.name && <p className="mt-1.5 text-xs text-rose-500">⚠ {errors.name}</p>}
+                        </div>
+
+                        {/* Email */}
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Email Address</label>
+                            <div className="relative">
+                                <Mail size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    placeholder="you@example.com"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    className={`${inputBase} ${errors.email ? inputError : inputNormal}`}
+                                />
+                            </div>
+                            {errors.email && <p className="mt-1.5 text-xs text-rose-500">⚠ {errors.email}</p>}
+                        </div>
+
+                        {/* Password */}
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Password</label>
+                            <div className="relative">
+                                <Lock size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    placeholder="Min. 6 characters"
+                                    value={form.password}
+                                    onChange={handleChange}
+                                    className={`${inputBase} pr-12 ${errors.password ? inputError : inputNormal}`}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword((v) => !v)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-[var(--app-text)] transition"
+                                >
+                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                            </div>
+                            {errors.password && <p className="mt-1.5 text-xs text-rose-500">⚠ {errors.password}</p>}
+                            
+                            {form.password.length > 0 && (
+                                <div className="mt-2">
+                                    <div className="h-1.5 w-full rounded-full bg-white/10">
+                                        <div className={`h-1.5 rounded-full transition-all duration-500 ${strength.color}`} style={{ width: `${strength.pct}%` }} />
+                                    </div>
+                                    <p className="mt-1 text-xs text-muted">Password strength: <span className="font-semibold text-[var(--app-text)]">{strength.label}</span></p>
+                                </div>
+                            )}
+                        </div>
+
+                        <motion.button
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            type="submit"
+                            disabled={isRegisterLoading}
+                            className="brand-gradient flex w-full items-center justify-center gap-2 rounded-2xl py-3 font-semibold text-white transition-all duration-300 disabled:opacity-60"
+                        >
+                            {isRegisterLoading ? <><Spinner size={18} /> Sending Code…</> : <>Continue <ArrowRight size={18} /></>}
+                        </motion.button>
+                    </form>
+                ) : (
+                    <form onSubmit={handleVerifyOtp} className="space-y-5">
+                         <div className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-emerald-400">
+                            <CheckCircle2 size={18} />
+                            <p className="text-sm font-medium">Almost there! Verify your email to continue.</p>
+                        </div>
+
+                        <div>
+                            <label className="mb-2 block text-sm font-semibold text-[var(--app-text)] text-center">Verification Code</label>
                             <input
                                 type="text"
-                                name="name"
-                                autoComplete="name"
-                                placeholder="Arjun Sharma"
-                                value={form.name}
-                                onChange={handleChange}
-                                className={`${inputBase} ${errors.name ? inputError : inputNormal}`}
+                                maxLength={6}
+                                placeholder="000000"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                                className="w-full rounded-2xl border border-[var(--app-border)] bg-white/10 py-4 text-center text-3xl font-bold tracking-[1em] text-[var(--app-text)] outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/40"
                             />
                         </div>
-                        {errors.name && (
-                            <p className="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
-                                <span>⚠</span> {errors.name}
-                            </p>
-                        )}
-                    </div>
 
-                    {/* Email */}
-                    <div>
-                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Email Address</label>
-                        <div className="relative">
-                            <Mail size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-                            <input
-                                type="email"
-                                name="email"
-                                autoComplete="email"
-                                placeholder="you@example.com"
-                                value={form.email}
-                                onChange={handleChange}
-                                className={`${inputBase} ${errors.email ? inputError : inputNormal}`}
-                            />
-                        </div>
-                        {errors.email && (
-                            <p className="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
-                                <span>⚠</span> {errors.email}
-                            </p>
-                        )}
-                    </div>
+                        <motion.button
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            type="submit"
+                            disabled={isVerifyLoading}
+                            className="brand-gradient flex w-full items-center justify-center gap-2 rounded-2xl py-3 font-semibold text-white transition-all duration-300 disabled:opacity-60"
+                        >
+                            {isVerifyLoading ? <><Spinner size={18} /> Verifying…</> : "Verify & Start Playing"}
+                        </motion.button>
 
-                    {/* Password */}
-                    <div>
-                        <label className="mb-2 block text-sm font-semibold text-[var(--app-text)]">Password</label>
-                        <div className="relative">
-                            <Lock size={16} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                name="password"
-                                autoComplete="new-password"
-                                placeholder="Min. 6 characters"
-                                value={form.password}
-                                onChange={handleChange}
-                                className={`${inputBase} pr-12 ${errors.password ? inputError : inputNormal}`}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword((v) => !v)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-[var(--app-text)] transition"
-                            >
-                                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                            </button>
-                        </div>
-                        {errors.password && (
-                            <p className="mt-1.5 flex items-center gap-1 text-xs text-rose-500">
-                                <span>⚠</span> {errors.password}
-                            </p>
-                        )}
-
-                        {/* Password strength bar */}
-                        {form.password.length > 0 && (
-                            <div className="mt-2">
-                                <div className="h-1.5 w-full rounded-full bg-white/10">
-                                    <div
-                                        className={`h-1.5 rounded-full transition-all duration-500 ${strength.color}`}
-                                        style={{ width: `${strength.pct}%` }}
-                                    />
-                                </div>
-                                {strength.label && (
-                                    <p className="mt-1 text-xs text-muted">
-                                        Password strength:{" "}
-                                        <span className="font-semibold text-[var(--app-text)]">{strength.label}</span>
-                                    </p>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    <motion.button
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        type="submit"
-                        disabled={isLoading}
-                        className="brand-gradient flex w-full items-center justify-center gap-2 rounded-2xl py-3 font-semibold text-white transition-all duration-300 disabled:opacity-60"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Spinner size={18} />
-                                Creating account…
-                            </>
-                        ) : (
-                            <>
-                                Create Account
-                                <ArrowRight size={18} />
-                            </>
-                        )}
-                    </motion.button>
-                </form>
+                        <button 
+                            type="button"
+                            onClick={() => setStep(1)}
+                            className="w-full text-center text-sm text-muted hover:text-[var(--app-text)] transition"
+                        >
+                            Changed your email? Go back
+                        </button>
+                    </form>
+                )}
 
                 <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">

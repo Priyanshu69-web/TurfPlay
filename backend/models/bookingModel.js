@@ -2,6 +2,12 @@ import mongoose, { Schema } from "mongoose";
 
 const BookingModelSchema = new Schema(
   {
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: [true, "Tenant ID is required"],
+      index: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -62,6 +68,7 @@ const BookingModelSchema = new Schema(
 );
 
 // Index for efficient user booking queries
+BookingModelSchema.index({ tenantId: 1, createdAt: -1 });
 BookingModelSchema.index({ userId: 1, createdAt: -1 });
 BookingModelSchema.index({ turfId: 1, date: 1 });
 

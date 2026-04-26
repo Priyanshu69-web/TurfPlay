@@ -4,20 +4,23 @@ import TurfModel from "../models/turfModel.js";
 import { SlotModel } from "../models/slotModel.js";
 import ContactModel from "../models/contactModel.js";
 
-// Admin Stats
 export const getAdminStats = async (req, res) => {
   try {
-    const totalBookings = await BookingModel.countDocuments();
+    const totalBookings = await BookingModel.countDocuments({ tenantId: req.tenantId });
     const todayBookings = await BookingModel.countDocuments({
+      tenantId: req.tenantId,
       date: {
         $gte: new Date(new Date().setHours(0, 0, 0, 0)),
         $lt: new Date(new Date().setHours(23, 59, 59, 999)),
       },
     });
-    const totalUsers = await UserModel.countDocuments({ role: 0 });
-    const totalTurfs = await TurfModel.countDocuments();
+    const totalUsers = await UserModel.countDocuments({
+      tenantId: req.tenantId,
+      role: "user",
+    });
+    const totalTurfs = await TurfModel.countDocuments({ tenantId: req.tenantId });
     const totalRevenue = await BookingModel.aggregate([
-      { $match: { status: "confirmed" } },
+      { $match: { tenantId: req.currentUser.tenantId, status: "confirmed" } },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
 
@@ -37,11 +40,10 @@ export const getAdminStats = async (req, res) => {
   }
 };
 
-// Get all bookings with filters
 export const getAllBookings = async (req, res) => {
   try {
     const { date, status, turfId, page = 1, limit = 10 } = req.query;
-    const filter = {};
+    const filter = { tenantId: req.tenantId };
 
     if (date) {
       const startDate = new Date(date);
@@ -54,13 +56,16 @@ export const getAllBookings = async (req, res) => {
     if (status) filter.status = status;
     if (turfId) filter.turfId = turfId;
 
-    const skip = (page - 1) * limit;
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+    const skip = (parsedPage - 1) * parsedLimit;
+
     const bookings = await BookingModel.find(filter)
       .populate("userId", "name email phone")
       .populate("turfId", "name location pricePerSlot")
       .sort({ date: -1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parsedLimit);
 
     const total = await BookingModel.countDocuments(filter);
 
@@ -68,7 +73,7 @@ export const getAllBookings = async (req, res) => {
       success: true,
       data: bookings,
       total,
-      pages: Math.ceil(total / limit),
+      pages: Math.ceil(total / parsedLimit),
     });
   } catch (error) {
     console.error("Error fetching bookings:", error);
@@ -76,10 +81,12 @@ export const getAllBookings = async (req, res) => {
   }
 };
 
-// Get single booking
 export const getBookingDetail = async (req, res) => {
   try {
-    const booking = await BookingModel.findById(req.params.id)
+    const booking = await BookingModel.findOne({
+      _id: req.params.id,
+      tenantId: req.tenantId,
+    })
       .populate("userId", "name email phone address")
       .populate("turfId", "name location phone pricePerSlot")
       .populate("slotId");
@@ -94,12 +101,11 @@ export const getBookingDetail = async (req, res) => {
   }
 };
 
-// Cancel booking (admin)
 export const cancelBooking = async (req, res) => {
   try {
     const { reason } = req.body;
-    const booking = await BookingModel.findByIdAndUpdate(
-      req.params.id,
+    const booking = await BookingModel.findOneAndUpdate(
+      { _id: req.params.id, tenantId: req.tenantId },
       {
         status: "cancelled",
         cancellationReason: reason,
@@ -112,8 +118,10 @@ export const cancelBooking = async (req, res) => {
       return res.status(404).json({ success: false, message: "Booking not found" });
     }
 
-    // Make slot available again
-    await SlotModel.findByIdAndUpdate(booking.slotId, { status: "available" });
+    await SlotModel.findOneAndUpdate(
+      { _id: booking.slotId, tenantId: req.tenantId },
+      { status: "available", isBlocked: false }
+    );
 
     res.status(200).json({
       success: true,
@@ -125,15 +133,18 @@ export const cancelBooking = async (req, res) => {
   }
 };
 
-// Block/Unblock user
 export const blockUser = async (req, res) => {
   try {
     const { isBlocked, reason } = req.body;
-    const user = await UserModel.findByIdAndUpdate(
-      req.params.id,
+    const user = await UserModel.findOneAndUpdate(
+      { _id: req.params.id, tenantId: req.tenantId, role: "user" },
       { isBlocked, blockedReason: reason },
       { new: true }
     ).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
 
     res.status(200).json({
       success: true,
@@ -145,11 +156,10 @@ export const blockUser = async (req, res) => {
   }
 };
 
-// Get all users
 export const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;
-    const filter = { role: 0 };
+    const filter = { tenantId: req.tenantId, role: "user" };
 
     if (search) {
       filter.$or = [
@@ -158,38 +168,42 @@ export const getAllUsers = async (req, res) => {
       ];
     }
 
-    const skip = (page - 1) * limit;
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+    const skip = (parsedPage - 1) * parsedLimit;
+
     const users = await UserModel.find(filter)
       .select("-password")
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parsedLimit);
 
     const bookingCounts = await Promise.all(
-      users.map(async (user) => {
-        const count = await BookingModel.countDocuments({ userId: user._id });
-        return count;
-      })
+      users.map((user) =>
+        BookingModel.countDocuments({
+          tenantId: req.tenantId,
+          userId: user._id,
+        })
+      )
     );
 
     const total = await UserModel.countDocuments(filter);
 
-    const usersWithCount = users.map((user, idx) => ({
+    const usersWithCount = users.map((user, index) => ({
       ...user.toObject(),
-      bookingCount: bookingCounts[idx],
+      bookingCount: bookingCounts[index],
     }));
 
     res.status(200).json({
       success: true,
       data: usersWithCount,
       total,
-      pages: Math.ceil(total / limit),
+      pages: Math.ceil(total / parsedLimit),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching users" });
   }
 };
 
-// Update message status
 export const updateMessageStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -209,7 +223,6 @@ export const updateMessageStatus = async (req, res) => {
   }
 };
 
-// Get all messages
 export const getAllMessages = async (req, res) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
@@ -217,11 +230,14 @@ export const getAllMessages = async (req, res) => {
 
     if (status) filter.status = status;
 
-    const skip = (page - 1) * limit;
+    const parsedPage = Number(page);
+    const parsedLimit = Number(limit);
+    const skip = (parsedPage - 1) * parsedLimit;
+
     const messages = await ContactModel.find(filter)
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(parseInt(limit));
+      .limit(parsedLimit);
 
     const total = await ContactModel.countDocuments(filter);
 
@@ -229,7 +245,7 @@ export const getAllMessages = async (req, res) => {
       success: true,
       data: messages,
       total,
-      pages: Math.ceil(total / limit),
+      pages: Math.ceil(total / parsedLimit),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Error fetching messages" });

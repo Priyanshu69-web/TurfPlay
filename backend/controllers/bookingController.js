@@ -24,7 +24,13 @@ export const createBookings = async (req, res) => {
       paymentMethod: paymentMethod || "online",
     };
 
-    const booking = await bookingService.createBooking(userId, slotId, turfId, bookingData);
+    const booking = await bookingService.createBooking(
+      req.tenantId,
+      userId,
+      slotId,
+      turfId,
+      bookingData
+    );
 
     res.status(201).json({
       success: true,
@@ -54,7 +60,7 @@ export const createBookings = async (req, res) => {
 export const getUserBookings = async (req, res) => {
   try {
     const userId = req.user.id;
-    const bookings = await bookingService.getUserBookings(userId);
+    const bookings = await bookingService.getUserBookings(req.tenantId, userId);
 
     res.status(200).json({
       success: true,
@@ -76,7 +82,7 @@ export const getUserBookings = async (req, res) => {
 export const getUpcomingBookings = async (req, res) => {
   try {
     const userId = req.user.id;
-    const bookings = await bookingService.getUpcomingBookings(userId);
+    const bookings = await bookingService.getUpcomingBookings(req.tenantId, userId);
 
     res.status(200).json({
       success: true,
@@ -98,7 +104,7 @@ export const getUpcomingBookings = async (req, res) => {
 export const getBookingHistory = async (req, res) => {
   try {
     const userId = req.user.id;
-    const bookings = await bookingService.getBookingHistory(userId);
+    const bookings = await bookingService.getBookingHistory(req.tenantId, userId);
 
     res.status(200).json({
       success: true,
@@ -131,15 +137,16 @@ export const cancelBooking = async (req, res) => {
     }
 
     // Verify ownership
-    const booking = await bookingService.getBookingById(bookingId);
-    if (!booking || booking.userId.toString() !== userId) {
+    const booking = await bookingService.getBookingById(req.tenantId, bookingId);
+    const bookingUserId = booking?.userId?._id?.toString() || booking?.userId?.toString();
+    if (!booking || bookingUserId !== userId) {
       return res.status(403).json({
         success: false,
         message: "Unauthorized",
       });
     }
 
-    await bookingService.cancelBooking(bookingId);
+    await bookingService.cancelBooking(req.tenantId, bookingId);
 
     res.status(200).json({
       success: true,

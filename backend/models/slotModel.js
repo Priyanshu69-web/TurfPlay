@@ -2,6 +2,12 @@ import mongoose from "mongoose";
 
 const slotSchema = new mongoose.Schema(
   {
+    tenantId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tenant",
+      required: true,
+      index: true,
+    },
     turfId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Turf",
@@ -38,6 +44,7 @@ const slotSchema = new mongoose.Schema(
 );
 
 // Index for efficient queries
+slotSchema.index({ tenantId: 1, date: 1, status: 1 });
 slotSchema.index({ turfId: 1, date: 1, status: 1 });
 
 export const SlotModel = mongoose.model("Slot", slotSchema);

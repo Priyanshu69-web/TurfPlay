@@ -6,7 +6,8 @@ import TurfModel from "../models/turfModel.js";
  */
 export const getTurfs = async (req, res) => {
   try {
-    const turfs = await TurfModel.find();
+    const filter = req.tenantId ? { tenantId: req.tenantId } : {};
+    const turfs = await TurfModel.find(filter);
 
     res.status(200).json({
       success: true,
@@ -28,7 +29,8 @@ export const getTurfs = async (req, res) => {
 export const getTurfById = async (req, res) => {
   try {
     const { id } = req.params;
-    const turf = await TurfModel.findById(id);
+    const filter = req.tenantId ? { _id: id, tenantId: req.tenantId } : { _id: id };
+    const turf = await TurfModel.findOne(filter);
 
     if (!turf) {
       return res.status(404).json({
@@ -56,7 +58,15 @@ export const getTurfById = async (req, res) => {
  */
 export const createTurf = async (req, res) => {
   try {
-    const { name, location, description, pricePerSlot, images, openingTime, closingTime, slotDuration, facilities, latitude, longitude, capacity, phone, website, amenities } = req.body;
+    const { name, location, description, pricePerSlot, openingTime, closingTime, slotDuration, facilities, latitude, longitude, capacity, phone, website, amenities } = req.body;
+    
+    // Handle Cloudinary Uploads
+    let imageList = [];
+    if (req.files && req.files.length > 0) {
+      imageList = req.files.map(file => file.path);
+    } else if (req.body.images) {
+      imageList = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
+    }
 
     if (!name || !location || pricePerSlot === undefined) {
       return res.status(400).json({
@@ -66,11 +76,12 @@ export const createTurf = async (req, res) => {
     }
 
     const turf = new TurfModel({
+      tenantId: req.tenantId,
       name,
       location,
       description: description || "",
       pricePerSlot,
-      images: images || [],
+      images: imageList,
       openingTime: openingTime || "06:00",
       closingTime: closingTime || "22:00",
       slotDuration: slotDuration || 60,
@@ -105,16 +116,21 @@ export const createTurf = async (req, res) => {
 export const updateTurf = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, location, description, pricePerSlot, images, openingTime, closingTime, slotDuration, facilities, latitude, longitude, capacity, phone, website, amenities } = req.body;
+    const { name, location, description, pricePerSlot, openingTime, closingTime, slotDuration, facilities, latitude, longitude, capacity, phone, website, amenities } = req.body;
 
-    const turf = await TurfModel.findByIdAndUpdate(
-      id,
-      {
+    // Handle Image Updates
+    let imageList;
+    if (req.files && req.files.length > 0) {
+      imageList = req.files.map(file => file.path);
+    } else if (req.body.images) {
+       imageList = Array.isArray(req.body.images) ? req.body.images : [req.body.images];
+    }
+
+    const updateData = {
         name,
         location,
         description,
         pricePerSlot,
-        images,
         openingTime,
         closingTime,
         slotDuration,
@@ -125,7 +141,15 @@ export const updateTurf = async (req, res) => {
         phone,
         website,
         amenities,
-      },
+    };
+
+    if (imageList) {
+        updateData.images = imageList;
+    }
+
+    const turf = await TurfModel.findOneAndUpdate(
+      { _id: id, tenantId: req.tenantId },
+      updateData,
       { new: true, runValidators: true }
     );
 
@@ -163,8 +187,8 @@ export const updateTurfPricing = async (req, res) => {
       });
     }
 
-    const turf = await TurfModel.findByIdAndUpdate(
-      id,
+    const turf = await TurfModel.findOneAndUpdate(
+      { _id: id, tenantId: req.tenantId },
       { pricePerSlot, slotDuration },
       { new: true }
     );
@@ -185,8 +209,8 @@ export const updateTurfHours = async (req, res) => {
     const { id } = req.params;
     const { openingTime, closingTime } = req.body;
 
-    const turf = await TurfModel.findByIdAndUpdate(
-      id,
+    const turf = await TurfModel.findOneAndUpdate(
+      { _id: id, tenantId: req.tenantId },
       { openingTime, closingTime },
       { new: true }
     );
