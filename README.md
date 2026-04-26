@@ -107,6 +107,28 @@ To transition TurfPlay into a full-scale SaaS product, the following features ar
 - [ ] **Recurring Bookings**: Allow users to reserve weekly slots for team practices.
 - [ ] **Mobile App**: A companion React Native app for on-the-go bookings.
 
+## 🌐 Deployment Guide
+
+TurfPlay is ready for production. Follow these steps to deploy:
+
+### 1. Backend Deployment (Render)
+1. **Create a Web Service** on Render and connect your repository.
+2. **Root Directory**: `backend`
+3. **Build Command**: `pnpm install`
+4. **Start Command**: `pnpm start`
+5. **Environment Variables**:
+   - `PORT`: `8080` (or leave empty, Render handles it)
+   - `MONGO_URI`: Your MongoDB Atlas connection string.
+   - `SECRET_KEY`: A secure random string for JWT.
+   - `FRONTEND_URL`: `https://your-app-name.vercel.app` (Your Vercel URL).
+
+### 2. Frontend Deployment (Vercel)
+1. **Create a Project** on Vercel and connect your repository.
+2. **Framework Preset**: `Vite`
+3. **Root Directory**: `frontend`
+4. **Environment Variables**:
+   - `VITE_API_URL`: `https://your-backend-name.onrender.com` (Your Render URL).
+
 ---
 
 ## 📞 Support & Contact
