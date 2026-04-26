@@ -14,6 +14,7 @@ import Booking from "./pages/Booking";
 import Contact from "./pages/Contact";
 import MainLayout from "./components/Layout";
 import PrivateRoute from "./routes/PrivateRoute";
+import AuthRoute from "./routes/AuthRoute";
 import UserDashboard from "./pages/User/Userdashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import NotFound from "./pages/NotFound";
@@ -73,10 +74,14 @@ function AppContent() {
             <Route path="/" element={<Home />} />
             <Route path="/booking" element={<Booking />} />
             <Route path="/contact" element={<Contact />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
+            
+            {/* Guest only routes */}
+            <Route element={<AuthRoute />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+            </Route>
           </Route>
 
           {/* Admin routes */}
