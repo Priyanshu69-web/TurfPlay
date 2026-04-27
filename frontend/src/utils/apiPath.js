@@ -19,14 +19,21 @@ export const API_PATHS = {
     GENERATE_NEXT_DAYS: "/api/v1/slots/generate-next-days",
   },
   BOOKINGS: {
-    CREATE: "/api/v1/bookings/create-booking",
+    CREATE_ORDER: "/api/v1/bookings/create-order",
+    VERIFY_PAYMENT: "/api/v1/bookings/verify-payment",
+    PAYMENT_FAILED: "/api/v1/bookings/payment-failed",
     GET_USER_BOOKINGS: "/api/v1/bookings/user-bookings",
     GET_UPCOMING: "/api/v1/bookings/upcoming-bookings",
     GET_HISTORY: "/api/v1/bookings/booking-history",
     CANCEL: "/api/v1/bookings/cancel-booking",
   },
+  SUBSCRIPTION: {
+    STATUS: "/api/v1/subscription/status",
+  },
   CONTACT: {
     SUBMIT: "/api/v1/contact/submit",
   },
+  ADMIN: {
+    ANALYTICS: "/api/v1/admin/analytics",
+  }
 };
-

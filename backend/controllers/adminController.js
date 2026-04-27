@@ -3,6 +3,7 @@ import UserModel from "../models/userModel.js";
 import TurfModel from "../models/turfModel.js";
 import { SlotModel } from "../models/slotModel.js";
 import ContactModel from "../models/contactModel.js";
+import mongoose from "mongoose";
 
 export const getAdminStats = async (req, res) => {
   try {
@@ -20,7 +21,7 @@ export const getAdminStats = async (req, res) => {
     });
     const totalTurfs = await TurfModel.countDocuments({ tenantId: req.tenantId });
     const totalRevenue = await BookingModel.aggregate([
-      { $match: { tenantId: req.currentUser.tenantId, status: "confirmed" } },
+      { $match: { tenantId: req.tenantId, status: "confirmed" } },
       { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
 
@@ -37,6 +38,122 @@ export const getAdminStats = async (req, res) => {
   } catch (error) {
     console.error("Error fetching stats:", error);
     res.status(500).json({ success: false, message: "Error fetching stats" });
+  }
+};
+
+export const getAnalytics = async (req, res) => {
+  try {
+    const tenantId = req.tenantId;
+    
+    // 1. Monthly Revenue (Last 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const monthlyRevenueRaw = await BookingModel.aggregate([
+      { 
+        $match: { 
+            tenantId, 
+            status: "confirmed",
+            date: { $gte: sixMonthsAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { month: { $month: "$date" }, year: { $year: "$date" } },
+          total: { $sum: "$amount" }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    // Format monthly data for frontend charts
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthlyRevenue = monthlyRevenueRaw.map(item => ({
+        name: `${monthNames[item._id.month - 1]} ${item._id.year}`,
+        revenue: item.total
+    }));
+
+    // 2. Weekly Bookings (Last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const weeklyBookingsRaw = await BookingModel.aggregate([
+      { 
+        $match: { 
+            tenantId, 
+            date: { $gte: sevenDaysAgo }
+        } 
+      },
+      {
+        $group: {
+          _id: { 
+            day: { $dayOfMonth: "$date" }, 
+            month: { $month: "$date" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { "_id.month": 1, "_id.day": 1 } }
+    ]);
+
+    const weeklyBookings = weeklyBookingsRaw.map(item => ({
+        name: `${item._id.day}/${item._id.month}`,
+        bookings: item.count
+    }));
+
+    // 3. Peak Hours
+    const peakHoursRaw = await BookingModel.aggregate([
+      { $match: { tenantId, status: "confirmed" } },
+      {
+        $group: {
+          _id: "$startTime",
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 }
+    ]);
+    const peakHours = peakHoursRaw.map(item => ({
+        time: item._id,
+        count: item.count
+    }));
+
+    // 4. Revenue By Turf
+    const revenueByTurfRaw = await BookingModel.aggregate([
+      { $match: { tenantId, status: "confirmed" } },
+      {
+        $group: {
+          _id: "$turfId",
+          revenue: { $sum: "$amount" }
+        }
+      }
+    ]);
+    
+    // Populate turf names
+    const turfs = await TurfModel.find({ _id: { $in: revenueByTurfRaw.map(r => r._id) } }, "name");
+    const revenueByTurf = revenueByTurfRaw.map(r => {
+        const turf = turfs.find(t => t._id.toString() === r._id.toString());
+        return {
+            name: turf ? turf.name : "Unknown",
+            value: r.revenue
+        };
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+          monthlyRevenue,
+          weeklyBookings,
+          peakHours,
+          revenueByTurf
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching analytics:", error);
+    res.status(500).json({ success: false, message: "Error fetching analytics" });
   }
 };
 

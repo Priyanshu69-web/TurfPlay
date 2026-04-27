@@ -1,10 +1,10 @@
 import * as bookingService from "../services/bookingService.js";
 
 /**
- * Create a new booking
+ * Create a new booking order (Step 1)
  * Body: slotId, turfId, playerName, playerPhone, playerCount, notes, paymentMethod
  */
-export const createBookings = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const { slotId, turfId, playerName, playerPhone, playerCount, notes, paymentMethod } = req.body;
     const userId = req.user.id;
@@ -24,7 +24,7 @@ export const createBookings = async (req, res) => {
       paymentMethod: paymentMethod || "online",
     };
 
-    const booking = await bookingService.createBooking(
+    const result = await bookingService.createPendingBooking(
       req.tenantId,
       userId,
       slotId,
@@ -34,13 +34,13 @@ export const createBookings = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Booking created successfully",
-      data: booking,
+      message: paymentMethod === "online" ? "Order created successfully" : "Booking confirmed successfully",
+      data: result,
     });
   } catch (error) {
-    console.error("Error creating booking:", error);
+    console.error("Error creating order:", error);
 
-    if (error.message.includes("not available")) {
+    if (error.message.includes("not available") || error.message.includes("already have a booking")) {
       return res.status(400).json({
         success: false,
         message: error.message,
@@ -49,8 +49,60 @@ export const createBookings = async (req, res) => {
 
     res.status(500).json({
       success: false,
-      message: "Failed to create booking",
+      message: "Failed to create booking order",
     });
+  }
+};
+
+/**
+ * Verify payment (Step 2)
+ */
+export const verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ success: false, message: "Missing payment details" });
+    }
+
+    const booking = await bookingService.confirmBooking(
+      req.tenantId,
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Payment verified and booking confirmed",
+      data: booking
+    });
+  } catch (error) {
+    console.error("Error verifying payment:", error);
+    res.status(400).json({ success: false, message: error.message || "Payment verification failed" });
+  }
+};
+
+/**
+ * Handle payment failure / cancellation from checkout modal
+ */
+export const paymentFailed = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+       return res.status(400).json({ success: false, message: "Order ID required" });
+    }
+
+    const booking = await bookingService.handleFailedPayment(req.tenantId, orderId);
+
+    res.status(200).json({
+      success: true,
+      message: "Payment failure handled",
+      data: booking
+    });
+  } catch (error) {
+    console.error("Error handling payment failure:", error);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -160,4 +212,3 @@ export const cancelBooking = async (req, res) => {
     });
   }
 };
-

@@ -9,6 +9,7 @@ import {
   getAllUsers,
   updateMessageStatus,
   getAllMessages,
+  getAnalytics,
 } from "../controllers/adminController.js";
 import {
   blockSlot,
@@ -26,8 +27,9 @@ const router = express.Router();
 router.use(requireSignIn);
 router.use(isAdmin);
 
-// Admin Stats
+// Admin Stats & Analytics
 router.get("/stats", getAdminStats);
+router.get("/analytics", getAnalytics);
 
 // Admin Bookings
 router.get("/bookings", getAllBookings);

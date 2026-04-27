@@ -19,6 +19,7 @@ import {
 import axiosInstance from "../utils/axiosInstance";
 import { API_PATHS } from "../utils/apiPath";
 import { useAuth } from "../context/AuthContext";
+import { loadRazorpayScript } from "../utils/razorpay";
 
 const Booking = () => {
   const [turfs, setTurfs] = useState([]);
@@ -171,7 +172,8 @@ const Booking = () => {
     }
 
     try {
-      const response = await axiosInstance.post(API_PATHS.BOOKINGS.CREATE, {
+      setLoading(true);
+      const payload = {
         slotId: selectedSlot._id,
         turfId: selectedTurf._id,
         playerName: bookingDetails.playerName,
@@ -179,14 +181,74 @@ const Booking = () => {
         playerCount: bookingDetails.playerCount,
         notes: bookingDetails.notes,
         paymentMethod: bookingDetails.paymentMethod,
-      });
+        date: selectedDate, // Backend createOrder needs date and time if it wants to re-validate, but let's just pass slot info as we did
+      };
+
+      const response = await axiosInstance.post(API_PATHS.BOOKINGS.CREATE_ORDER, payload);
 
       if (response.data.success) {
-        toast.success("Booking confirmed!");
-        navigate("/user/dashboard");
+        if (bookingDetails.paymentMethod === 'online' && response.data.data.razorpayOrderId) {
+            // Razorpay flow
+            const { order, amount, razorpayOrderId } = response.data.data;
+            const res = await loadRazorpayScript();
+            
+            if (!res) {
+                toast.error("Razorpay SDK failed to load. Are you online?");
+                setLoading(false);
+                return;
+            }
+
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || "", 
+                amount: amount.toString(),
+                currency: "INR",
+                name: "TurfPlay",
+                description: `Booking for ${selectedTurf.name}`,
+                order_id: razorpayOrderId,
+                handler: async function (res) {
+                    try {
+                        const verifyRes = await axiosInstance.post(API_PATHS.BOOKINGS.VERIFY_PAYMENT, {
+                            razorpayOrderId: res.razorpay_order_id,
+                            razorpayPaymentId: res.razorpay_payment_id,
+                            razorpaySignature: res.razorpay_signature,
+                            bookingId: order._id
+                        });
+                        if (verifyRes.data.success) {
+                            toast.success("Payment successful! Booking confirmed.");
+                            navigate("/user/dashboard");
+                        }
+                    } catch (err) {
+                        toast.error(err.response?.data?.message || "Payment verification failed");
+                        await axiosInstance.post(API_PATHS.BOOKINGS.PAYMENT_FAILED, { bookingId: order._id });
+                    }
+                },
+                prefill: {
+                    name: bookingDetails.playerName,
+                    contact: bookingDetails.playerPhone,
+                },
+                theme: {
+                    color: "#10b981", // Emerald 500
+                },
+                modal: {
+                    ondismiss: async function () {
+                        toast.error("Payment cancelled");
+                        await axiosInstance.post(API_PATHS.BOOKINGS.PAYMENT_FAILED, { bookingId: order._id });
+                        setLoading(false);
+                    }
+                }
+            };
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+        } else {
+            // Offline flow (cash/upi)
+            toast.success("Booking confirmed!");
+            navigate("/user/dashboard");
+        }
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Booking failed");
+    } finally {
+        if (bookingDetails.paymentMethod !== 'online') setLoading(false);
     }
   };
 
@@ -533,11 +595,11 @@ const Booking = () => {
 
               <button
                 onClick={handleBooking}
-                disabled={!selectedSlot || !user || selectedSlot.status !== "available" || !bookingDetails.playerName || !bookingDetails.playerPhone}
+                disabled={!selectedSlot || !user || selectedSlot.status !== "available" || !bookingDetails.playerName || !bookingDetails.playerPhone || loading}
                 className="brand-gradient mt-6 inline-flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 font-semibold text-white transition duration-300 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <CheckCircle2 size={18} />
-                Confirm Booking
+                {loading ? <Spinner size="sm" /> : <CheckCircle2 size={18} />}
+                {loading ? "Processing..." : (bookingDetails.paymentMethod === 'online' ? "Pay & Confirm Booking" : "Confirm Booking")}
               </button>
 
 

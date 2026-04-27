@@ -43,11 +43,15 @@ export const signupController = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOTP();
 
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 7);
+
     const tenant = new TenantModel({
       _id: tenantId,
       name: tenantName?.trim() || `${name.trim()}'s TurfPlay`,
       ownerId: userId,
       subscriptionPlan: subscriptionPlan || "trial",
+      trialEndDate: subscriptionPlan !== "trial" ? undefined : trialEndDate,
     });
     const user = new UserModel({
       _id: userId,

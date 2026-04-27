@@ -35,10 +35,11 @@ const BookingModelSchema = new Schema(
       type: String,
       required: [true, "End time is required"],
     },
+    // "pending" until payment verified; "confirmed" after successful payment
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled"],
-      default: "confirmed",
+      default: "pending",
     },
     amount: {
       type: Number,
@@ -59,7 +60,19 @@ const BookingModelSchema = new Schema(
     paymentStatus: {
       type: String,
       enum: ["pending", "completed", "failed"],
-      default: "completed",
+      default: "pending",
+    },
+    // Razorpay payment tracking fields
+    razorpayOrderId: {
+      type: String,
+      index: true,
+    },
+    razorpayPaymentId: String,
+    razorpaySignature: String,
+    // Reminder email tracking
+    reminderSent: {
+      type: Boolean,
+      default: false,
     },
     cancellationReason: String,
     cancellationDate: Date,
@@ -67,11 +80,11 @@ const BookingModelSchema = new Schema(
   { timestamps: true }
 );
 
-// Index for efficient user booking queries
+// Indexes for efficient queries
 BookingModelSchema.index({ tenantId: 1, createdAt: -1 });
 BookingModelSchema.index({ userId: 1, createdAt: -1 });
 BookingModelSchema.index({ turfId: 1, date: 1 });
+BookingModelSchema.index({ razorpayOrderId: 1 });
 
 const BookingModel = mongoose.model("Booking", BookingModelSchema);
 export default BookingModel;
-

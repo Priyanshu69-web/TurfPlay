@@ -9,13 +9,16 @@ import slotRoutes from "./routes/slotRoutes.js";
 import turfRoutes from "./routes/turfRoutes.js";
 import contactRoutes from "./routes/contactRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import TenantModel from "./models/tenantModel.js";
 import UserModel from "./models/userModel.js";
+import { startReminderCronJob } from "./services/reminderService.js";
 
 dotenv.config();
 
 const app = express();
 connectDB();
+startReminderCronJob();
 
 // CORS Configuration
 const allowedOrigins = [
@@ -50,6 +53,7 @@ app.use("/api/v1/slots", slotRoutes);
 app.use("/api/v1/turfs", turfRoutes);
 app.use("/api/v1/contact", contactRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/subscription", subscriptionRoutes);
 
 // Health check
 app.get("/api/v1/health", (req, res) => {
