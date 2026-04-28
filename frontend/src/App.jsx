@@ -18,6 +18,7 @@ import PrivateRoute from "./routes/PrivateRoute";
 import AuthRoute from "./routes/AuthRoute";
 import UserDashboard from "./pages/User/Userdashboard";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import Onboarding from "./pages/Admin/Onboarding";
 import NotFound from "./pages/NotFound";
 
 import { Toaster } from "sonner";
@@ -89,6 +90,7 @@ function AppContent() {
           {/* Admin routes */}
           <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
+            <Route path="/admin/onboarding" element={<Onboarding />} />
           </Route>
 
           {/* User routes */}

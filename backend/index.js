@@ -13,6 +13,9 @@ import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import TenantModel from "./models/tenantModel.js";
 import UserModel from "./models/userModel.js";
 import { startReminderCronJob } from "./services/reminderService.js";
+import helmet from "helmet";
+import morgan from "morgan";
+import logger from "./utils/logger.js";
 
 dotenv.config();
 
@@ -45,6 +48,19 @@ app.use(
 );
 
 app.use(express.json());
+
+// Security middleware
+app.use(helmet());
+
+// Logging middleware
+const morganFormat = process.env.NODE_ENV === "production" ? "combined" : "dev";
+app.use(
+  morgan(morganFormat, {
+    stream: {
+      write: (message) => logger.info(message.trim()),
+    },
+  })
+);
 
 // API Routes
 app.use("/api/v1/auth", userRoutes);

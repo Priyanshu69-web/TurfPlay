@@ -4,6 +4,9 @@ import Hero from '../components/Hero';
 import Stats from '../components/Stats';
 import BookingSection from '../components/BookingSection';
 import PopularTurfs from '../components/PopularTurfs';
+import DemoSection from '../components/DemoSection';
+import PricingSection from '../components/PricingSection';
+import { Link } from 'react-router-dom';
 
 // Reusable glass card component
 const GlassCard = ({ children, className = '' }) => (
@@ -136,6 +139,33 @@ const Home = () => {
             </section> */}
             <section className="mx-4 my-12 border-t border-[var(--app-border)] sm:mx-6 lg:mx-8">
                 <Stats />
+            </section>
+
+            {/* Dashboard Demo Preview */}
+            <section className="border-t border-[var(--app-border)] bg-black/20">
+                <DemoSection />
+            </section>
+
+            {/* Pricing Section */}
+            <section className="border-t border-[var(--app-border)]">
+                <PricingSection />
+            </section>
+
+            {/* Final CTA */}
+            <section className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden">
+                <div className="absolute inset-0 -z-10 bg-gradient-to-b from-transparent to-emerald-900/20"></div>
+                <div className="max-w-4xl mx-auto text-center">
+                    <h2 className="text-3xl sm:text-5xl font-bold text-white mb-6">
+                        Ready to level up your turf business?
+                    </h2>
+                    <p className="text-xl text-emerald-100/80 mb-10 max-w-2xl mx-auto">
+                        Join hundreds of turf owners who have streamlined their operations, increased revenue, and made their customers happier.
+                    </p>
+                    <Link to="/register" className="inline-block px-8 py-4 text-lg font-bold text-slate-900 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full shadow-lg shadow-emerald-500/30 hover:scale-105 transition-transform duration-300">
+                        Start Your 7-Day Free Trial
+                    </Link>
+                    <p className="mt-4 text-sm text-slate-400">No credit card required. Cancel anytime.</p>
+                </div>
             </section>
 
         </div>

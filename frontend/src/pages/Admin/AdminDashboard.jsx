@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import { LayoutDashboard, Grid3x3, BookOpen, Users, MessageSquare, Clock, PieChart } from 'lucide-react';
+import { LayoutDashboard, Grid3x3, BookOpen, Users, MessageSquare, Clock, PieChart, CreditCard } from 'lucide-react';
 import AdminHome from './AdminDashboard/AdminHome';
 import ManageTurfs from './AdminDashboard/ManageTurfs';
 import ManageSlots from './AdminDashboard/ManageSlots';
@@ -8,6 +8,7 @@ import ManageBookings from './AdminDashboard/ManageBookings';
 import ManageUsers from './AdminDashboard/ManageUsers';
 import ManageMessages from './AdminDashboard/ManageMessages';
 import Analytics from './AdminDashboard/Analytics';
+import Billing from './AdminDashboard/Billing';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import DashboardShell from '../../components/Dashboard/DashboardShell';
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
     { label: 'Manage Users', path: '/admin/dashboard/users', icon: Users },
     { label: 'Messages', path: '/admin/dashboard/messages', icon: MessageSquare },
     { label: 'Analytics', path: '/admin/dashboard/analytics', icon: PieChart },
+    { label: 'Billing', path: '/admin/dashboard/billing', icon: CreditCard },
   ];
 
   const handleLogout = () => {
@@ -47,6 +49,7 @@ const AdminDashboard = () => {
         <Route path="/users" element={<ManageUsers />} />
         <Route path="/messages" element={<ManageMessages />} />
         <Route path="/analytics" element={<Analytics />} />
+        <Route path="/billing" element={<Billing />} />
       </Routes>
     </DashboardShell>
   );
