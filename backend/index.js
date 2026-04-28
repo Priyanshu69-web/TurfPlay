@@ -20,8 +20,8 @@ import logger from "./utils/logger.js";
 dotenv.config();
 
 const app = express();
-connectDB();
-startReminderCronJob();
+await connectDB();
+await startReminderCronJob();
 
 // CORS Configuration
 const allowedOrigins = [
